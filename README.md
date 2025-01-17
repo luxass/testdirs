@@ -35,13 +35,16 @@ const dir = await testdir({
 
   // Alternatively, you can create nested directories with a flat path
   "nested/tests/file4.txt": "Hello, Tests!"
-}, TestdirOptions);
+}, testdirOptions);
 
 console.log(dir.path);
 
 // you need to handle the removal process yourself!
 await dir.remove();
 ```
+
+> [!NOTE]
+> There is also a sync version available through the `testdir/sync` import.
 
 ### Different Types of Files
 
