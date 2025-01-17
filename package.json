@@ -1,6 +1,6 @@
 {
   "name": "testdirs",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A utility to create isolated test directories",
   "type": "module",
   "author": {
