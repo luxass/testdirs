@@ -28,6 +28,16 @@
         "default": "./dist/index.cjs"
       }
     },
+    "./sync": {
+      "import": {
+        "types": "./dist/sync.d.ts",
+        "default": "./dist/sync.mjs"
+      },
+      "require": {
+        "types": "./dist/sync.d.cts",
+        "default": "./dist/sync.cjs"
+      }
+    },
     "./helpers": {
       "import": {
         "types": "./dist/helpers.d.ts",
