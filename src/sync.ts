@@ -9,7 +9,7 @@ import { DEFAULT_ENCODING_FOR_FILE_FN, isDirectorySync, processDirectorySync } f
 
 export interface TestdirSyncResult {
   path: string;
-  rm: () => void;
+  remove: () => void;
   [Symbol.dispose]: () => void;
 }
 
@@ -36,7 +36,7 @@ export const testdirSync: TestdirSyncFn = function testdirSync(
 
   return {
     path: fixturePath,
-    rm: () => {
+    remove: () => {
       fs.rmSync(fixturePath, {
         recursive: true,
         force: true,

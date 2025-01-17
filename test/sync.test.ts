@@ -38,7 +38,7 @@ describe("create testdirs", () => {
     );
 
     // removing directory
-    dir.rm();
+    dir.remove();
     expect(fs.existsSync(dir.path)).toBe(false);
   });
 
@@ -54,7 +54,7 @@ describe("create testdirs", () => {
     expect(dir.path).toContain(path.normalize(`${OS_TMP_DIR}/testdirs-`));
 
     // removing directory
-    dir.rm();
+    dir.remove();
     expect(fs.existsSync(dir.path)).toBe(false);
   });
 
@@ -69,7 +69,7 @@ describe("create testdirs", () => {
     expect(dir.path).toContain(path.normalize(`${process.cwd()}/custom-dirname`));
 
     // removing directory
-    dir.rm();
+    dir.remove();
     expect(fs.existsSync(dir.path)).toBe(false);
   });
 
@@ -90,7 +90,7 @@ describe("create testdirs", () => {
     expect(fs.existsSync(dir.path)).toBe(true);
 
     // removing directory
-    dir.rm();
+    dir.remove();
     expect(fs.existsSync(dir.path)).toBe(false);
   });
 
@@ -110,7 +110,7 @@ describe("create testdirs", () => {
     expect(fs.readdirSync(path.join(dir.path, "subdir"))).toEqual(["file2.txt"]);
 
     // removing directory
-    dir.rm();
+    dir.remove();
     expect(fs.existsSync(dir.path)).toBe(false);
   });
 
@@ -169,7 +169,7 @@ describe("create testdirs", () => {
     ).toBe(true);
 
     // removing directory
-    dir.rm();
+    dir.remove();
     expect(fs.existsSync(dir.path)).toBe(false);
   });
 
@@ -185,7 +185,7 @@ describe("create testdirs", () => {
     expect(fs.readdirSync(path.join(dir.path, "nested"))).toEqual(expect.arrayContaining(["README.md", "image.txt"]));
 
     // removing directory
-    dir.rm();
+    dir.remove();
     expect(fs.existsSync(dir.path)).toBe(false);
   });
 });
@@ -396,7 +396,7 @@ describe("map fs to objects", () => {
       expect(rootReadme).toStrictEqual(testdirReadme);
 
       // removing directory
-      dir.rm();
+      dir.remove();
       expect(fs.existsSync(dir.path)).toBe(false);
     });
 
@@ -413,7 +413,7 @@ describe("map fs to objects", () => {
       expect(rootReadme).toStrictEqual(testdirReadme);
 
       // removing directory
-      dir.rm();
+      dir.remove();
       expect(fs.existsSync(dir.path)).toBe(false);
     });
   });

@@ -47,7 +47,7 @@ describe("create testdirs", () => {
     );
 
     // removing directory
-    await dir.rm();
+    await dir.remove();
     expect(await existsAsync(dir.path)).toBe(false);
   });
 
@@ -63,7 +63,7 @@ describe("create testdirs", () => {
     expect(dir.path).toContain(path.normalize(`${OS_TMP_DIR}/testdirs-`));
 
     // removing directory
-    await dir.rm();
+    await dir.remove();
     expect(await existsAsync(dir.path)).toBe(false);
   });
 
@@ -78,7 +78,7 @@ describe("create testdirs", () => {
     expect(dir.path).toContain(path.normalize(`${process.cwd()}/custom-dirname`));
 
     // removing directory
-    await dir.rm();
+    await dir.remove();
     expect(await existsAsync(dir.path)).toBe(false);
   });
 
@@ -99,7 +99,7 @@ describe("create testdirs", () => {
     expect(await existsAsync(dir.path)).toBe(true);
 
     // removing directory
-    await dir.rm();
+    await dir.remove();
     expect(await existsAsync(dir.path)).toBe(false);
   });
 
@@ -119,7 +119,7 @@ describe("create testdirs", () => {
     expect(await fsAsync.readdir(path.join(dir.path, "subdir"))).toEqual(["file2.txt"]);
 
     // removing directory
-    await dir.rm();
+    await dir.remove();
     expect(await existsAsync(dir.path)).toBe(false);
   });
 
@@ -178,7 +178,7 @@ describe("create testdirs", () => {
     ).toBe(true);
 
     // removing directory
-    await dir.rm();
+    await dir.remove();
     expect(await existsAsync(dir.path)).toBe(false);
   });
 
@@ -193,7 +193,7 @@ describe("create testdirs", () => {
     expect(await fsAsync.readdir(path.join(dir.path, "nested"))).toEqual(expect.arrayContaining(["README.md", "image.txt"]));
 
     // removing directory
-    await dir.rm();
+    await dir.remove();
     expect(await existsAsync(dir.path)).toBe(false);
   });
 });
@@ -404,7 +404,7 @@ describe("map fs to objects", () => {
       expect(rootReadme).toStrictEqual(testdirReadme);
 
       // removing directory
-      await dir.rm();
+      await dir.remove();
       expect(await existsAsync(dir.path)).toBe(false);
     });
 
@@ -421,7 +421,7 @@ describe("map fs to objects", () => {
       expect(rootReadme).toStrictEqual(testdirReadme);
 
       // removing directory
-      await dir.rm();
+      await dir.remove();
       expect(await existsAsync(dir.path)).toBe(false);
     });
   });
