@@ -27,7 +27,7 @@ export const testdir: TestdirFn = async function testdir(
     ? path.resolve(options.dirname)
     : fs.realpathSync(tmpdir());
 
-  const fixturePath = path.join(resolvedTemporaryDirectory, `testdirs-${randomUUID()}/`);
+  const fixturePath = path.join(resolvedTemporaryDirectory, `testdirs-${randomUUID()}`);
 
   await fsAsync.mkdir(fixturePath, {
     recursive: true,
@@ -72,6 +72,7 @@ export async function createFileTree(
   files: DirectoryJSON,
 ): Promise<void> {
   for (let filename in files) {
+    const originalFileName = filename;
     let data = files[filename];
     const metadata = hasMetadata(data) ? data[FIXTURE_METADATA_SYMBOL] : undefined;
     data = hasMetadata(data) ? data.content : data;
@@ -86,30 +87,12 @@ export async function createFileTree(
 
     if (isSymlink(data)) {
       if (files[FIXTURE_ORIGINAL_PATH_SYMBOL] != null) {
-        const original = path.normalize(files[FIXTURE_ORIGINAL_PATH_SYMBOL]);
-
-        // we need to replace here due to the fact that we call `createFileTree` recursively,
-        // and when we do it with a nested directory, the path is now the full path, and not just the relative path.
-        const tmpPath = path.normalize(filePath.replace(
-          // eslint-disable-next-line node/prefer-global/process
-          `${process.cwd()}${path.sep}`,
-          "",
-        ));
-
-        const pathLevels = tmpPath.split(/[/\\]/).filter(Boolean).length;
-        const originalLevels = original.split(/[/\\]/).filter(Boolean).length;
-
-        if (pathLevels < originalLevels) {
-          const diff = originalLevels - pathLevels;
-          data.path = data.path.replace(`..${path.sep}`.repeat(diff), "");
-        } else if (pathLevels > originalLevels) {
-          const diff = pathLevels - originalLevels;
-          data.path = `..${path.sep}`.repeat(diff) + data.path;
-        }
+        const original = path.resolve(path.normalize(files[FIXTURE_ORIGINAL_PATH_SYMBOL]));
+        data.path = path.relative(path.dirname(filename), path.join(original, originalFileName));
       }
 
       await fsAsync.symlink(
-        data.path,
+        path.normalize(data.path),
         filename,
         await isDirectory(filename) ? "junction" : "file",
       );

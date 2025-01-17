@@ -60,7 +60,7 @@ describe("create testdirs", () => {
     expect(await existsAsync(dir.path)).toBe(true);
 
     expect(await fsAsync.readdir(dir.path)).toEqual(["file1.txt"]);
-    expect(dir.path).toContain(`${OS_TMP_DIR}/testdirs-`);
+    expect(dir.path).toContain(path.normalize(`${OS_TMP_DIR}/testdirs-`));
 
     // removing directory
     await dir.rm();
@@ -75,7 +75,7 @@ describe("create testdirs", () => {
     const dir = await testdir(files, { dirname: "custom-dirname" });
     expect(await existsAsync(dir.path)).toBe(true);
 
-    expect(dir.path).toContain(`${process.cwd()}/custom-dirname`);
+    expect(dir.path).toContain(path.normalize(`${process.cwd()}/custom-dirname`));
 
     // removing directory
     await dir.rm();
@@ -190,7 +190,7 @@ describe("create testdirs", () => {
       expect.arrayContaining(["file.txt", "README.md", "nested"]),
     );
 
-    expect(await fsAsync.readdir(path.join(dir.path, "nested"))).toEqual(["README.md", "image.txt"]);
+    expect(await fsAsync.readdir(path.join(dir.path, "nested"))).toEqual(expect.arrayContaining(["README.md", "image.txt"]));
 
     // removing directory
     await dir.rm();

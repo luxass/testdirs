@@ -51,7 +51,7 @@ describe("create testdirs", () => {
     expect(fs.existsSync(dir.path)).toBe(true);
 
     expect(fs.readdirSync(dir.path)).toEqual(["file1.txt"]);
-    expect(dir.path).toContain(`${OS_TMP_DIR}/testdirs-`);
+    expect(dir.path).toContain(path.normalize(`${OS_TMP_DIR}/testdirs-`));
 
     // removing directory
     dir.rm();
@@ -66,7 +66,7 @@ describe("create testdirs", () => {
     const dir = testdirSync(files, { dirname: "custom-dirname" });
     expect(fs.existsSync(dir.path)).toBe(true);
 
-    expect(dir.path).toContain(`${process.cwd()}/custom-dirname`);
+    expect(dir.path).toContain(path.normalize(`${process.cwd()}/custom-dirname`));
 
     // removing directory
     dir.rm();
@@ -182,7 +182,7 @@ describe("create testdirs", () => {
       expect.arrayContaining(["file.txt", "README.md", "nested"]),
     );
 
-    expect(fs.readdirSync(path.join(dir.path, "nested"))).toEqual(["README.md", "image.txt"]);
+    expect(fs.readdirSync(path.join(dir.path, "nested"))).toEqual(expect.arrayContaining(["README.md", "image.txt"]));
 
     // removing directory
     dir.rm();

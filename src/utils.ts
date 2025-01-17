@@ -1,7 +1,7 @@
 import type { DirectoryJSON, FromFileSystemOptions } from "./types";
 import { readdirSync, readFileSync, readlinkSync, statSync } from "node:fs";
 import { readdir, readFile, readlink, stat } from "node:fs/promises";
-import { normalize } from "node:path";
+import { normalize, resolve } from "node:path";
 import {
   FIXTURE_ORIGINAL_PATH_SYMBOL,
 } from "./constants";
@@ -76,7 +76,7 @@ export async function processDirectory(
   options: Required<Omit<FromFileSystemOptions, "extras">>,
 ): Promise<DirectoryJSON> {
   const files: DirectoryJSON = {
-    [FIXTURE_ORIGINAL_PATH_SYMBOL]: normalize(path),
+    [FIXTURE_ORIGINAL_PATH_SYMBOL]: resolve(path),
   };
 
   const dirFiles = await readdir(path, {
