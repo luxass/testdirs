@@ -11,6 +11,8 @@
     "eslint.config.mjs",
     "pnpm-lock.yaml",
     ".github/**",
-    "test"
+    "test",
+    ".gitattributes",
+    "tsconfig.json"
   ]
 }
