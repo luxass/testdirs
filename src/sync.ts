@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { FIXTURE_METADATA_SYMBOL, FIXTURE_ORIGINAL_PATH_SYMBOL } from "./constants";
 import { hasMetadata, isLink, isPrimitive, isSymlink } from "./helpers";
-import { DEFAULT_ENCODING_FOR_FILE_FN, isDirectorySync, processDirectorySync } from "./utils";
+import { DEFAULT_ENCODING_FOR_FILE_FN, isDirectorySync, isSameRoot, processDirectorySync } from "./utils";
 
 export interface TestdirSyncResult {
   path: string;
@@ -68,6 +68,7 @@ testdirSync.from = (fsPath: string, options?: TestdirFromOptions) => {
  */
 export function createFileTreeSync(filePath: string, files: DirectoryJSON): void {
   for (let filename in files) {
+    const originalFileName = filename;
     let data = files[filename];
     const metadata = hasMetadata(data) ? data[FIXTURE_METADATA_SYMBOL] : undefined;
     data = hasMetadata(data) ? data.content : data;
@@ -82,25 +83,29 @@ export function createFileTreeSync(filePath: string, files: DirectoryJSON): void
 
     if (isSymlink(data)) {
       if (files[FIXTURE_ORIGINAL_PATH_SYMBOL] != null) {
-        const original = path.normalize(files[FIXTURE_ORIGINAL_PATH_SYMBOL]);
+        const original = path.resolve(path.normalize(files[FIXTURE_ORIGINAL_PATH_SYMBOL]));
+        const tmpPath = path.resolve(path.normalize(filePath));
 
-        // we need to replace here due to the fact that we call `createFileTree` recursively,
-        // and when we do it with a nested directory, the path is now the full path, and not just the relative path.
-        const tmpPath = path.normalize(filePath.replace(
-          // eslint-disable-next-line node/prefer-global/process
-          `${process.cwd()}${path.sep}`,
-          "",
-        ));
+        if (isSameRoot(original, tmpPath)) {
+          const pathLevels = tmpPath.split(path.sep).filter(Boolean).length;
+          const originalLevels = original.split(path.sep).filter(Boolean).length;
 
-        const pathLevels = tmpPath.split(/[/\\]/).filter(Boolean).length;
-        const originalLevels = original.split(/[/\\]/).filter(Boolean).length;
+          if (pathLevels < originalLevels) {
+            const diff = originalLevels - pathLevels;
+            data.path = data.path.replace(`..${path.sep}`.repeat(diff), "");
+          } else if (pathLevels > originalLevels) {
+            const diff = pathLevels - originalLevels;
+            data.path = `..${path.sep}`.repeat(diff) + data.path;
+          }
+        } else {
+          const originalParts = original.split(path.sep).filter(Boolean);
+          const currentParts = tmpPath.split(path.sep).filter(Boolean);
 
-        if (pathLevels < originalLevels) {
-          const diff = originalLevels - pathLevels;
-          data.path = data.path.replace(`..${path.sep}`.repeat(diff), "");
-        } else if (pathLevels > originalLevels) {
-          const diff = pathLevels - originalLevels;
-          data.path = `..${path.sep}`.repeat(diff) + data.path;
+          let newPath = "";
+
+          newPath = (`..${path.sep}`).repeat(currentParts.length) + originalParts.join(path.sep) + path.sep + originalFileName;
+
+          data.path = newPath;
         }
       }
 
