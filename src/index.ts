@@ -60,7 +60,7 @@
  * @example
  * ```ts
  * import assert from "node:assert";
- * import { fromFileSystem, type FromFileSystemOptions, testdir, type TestdirOptions, type TestdirSyncFromOptions } from "testdirs";
+ * import { fromFileSystem, type FromFileSystemOptions, testdir, type TestdirOptions } from "testdirs";
  *
  * const fromFSOptions = {
  *   ignore: [".git"], // ignore everything inside the .git directory

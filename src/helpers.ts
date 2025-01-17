@@ -5,7 +5,6 @@
  * @example
  * ```ts
  * import { isSymlink } from "testdirs/helpers";
- * import { fromFileSystem } from "testdirs"
  *
  * const files = {
  *   "test.txt": "Hello, World!",
