@@ -144,21 +144,3 @@ export function processDirectorySync(
 
   return files;
 }
-
-/**
- * Determines if two paths share the same root directory.
- *
- * @param {string} original - The first path to compare
- * @param {string} current - The second path to compare
- * @returns {boolean} indicating whether the paths share the same root directory
- *
- * @example
- * ```ts
- * isSameRoot("/home/user", "/home/other") // returns true
- * isSameRoot("/etc/config", "/home/user") // returns false
- * ```
- */
-export function isSameRoot(original: string, current: string): boolean {
-  // we use [1] because [0] is empty string because the paths is starting with /
-  return original.split(path.sep)[1] === current.split(path.sep)[1];
-}
