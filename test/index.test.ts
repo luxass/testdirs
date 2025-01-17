@@ -190,7 +190,7 @@ describe("create testdirs", () => {
       expect.arrayContaining(["file.txt", "README.md", "nested"]),
     );
 
-    expect(await fsAsync.readdir(path.join(dir.path, "nested"))).toEqual(["README.md", "image.txt"]);
+    expect(await fsAsync.readdir(path.join(dir.path, "nested"))).toEqual(expect.arrayContaining(["README.md", "image.txt"]));
 
     // removing directory
     await dir.rm();

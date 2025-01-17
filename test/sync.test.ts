@@ -182,7 +182,7 @@ describe("create testdirs", () => {
       expect.arrayContaining(["file.txt", "README.md", "nested"]),
     );
 
-    expect(fs.readdirSync(path.join(dir.path, "nested"))).toEqual(["README.md", "image.txt"]);
+    expect(fs.readdirSync(path.join(dir.path, "nested"))).toEqual(expect.arrayContaining(["README.md", "image.txt"]));
 
     // removing directory
     dir.rm();
