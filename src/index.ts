@@ -97,6 +97,8 @@ import { FIXTURE_METADATA_SYMBOL, FIXTURE_ORIGINAL_PATH_SYMBOL } from "./constan
 import { hasMetadata, isLink, isPrimitive, isSymlink } from "./helpers";
 import { DEFAULT_ENCODING_FOR_FILE_FN, isDirectory, processDirectory } from "./utils";
 
+export * from "./constants";
+
 export interface TestdirResult {
   path: string;
   remove: () => Promise<void>;
