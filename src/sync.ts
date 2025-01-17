@@ -26,7 +26,7 @@ export const testdirSync: TestdirSyncFn = function testdirSync(
     ? path.resolve(options.dirname)
     : fs.realpathSync(tmpdir());
 
-  const fixturePath = path.join(resolvedTemporaryDirectory, `testdirs-${randomUUID()}/`);
+  const fixturePath = path.join(resolvedTemporaryDirectory, `testdirs-${randomUUID()}`);
 
   fs.mkdirSync(fixturePath, {
     recursive: true,

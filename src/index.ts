@@ -27,7 +27,7 @@ export const testdir: TestdirFn = async function testdir(
     ? path.resolve(options.dirname)
     : fs.realpathSync(tmpdir());
 
-  const fixturePath = path.join(resolvedTemporaryDirectory, `testdirs-${randomUUID()}/`);
+  const fixturePath = path.join(resolvedTemporaryDirectory, `testdirs-${randomUUID()}`);
 
   await fsAsync.mkdir(fixturePath, {
     recursive: true,
@@ -114,7 +114,7 @@ export async function createFileTree(
       }
 
       await fsAsync.symlink(
-        data.path,
+        path.normalize(data.path),
         filename,
         await isDirectory(filename) ? "junction" : "file",
       );
