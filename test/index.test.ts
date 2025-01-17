@@ -200,7 +200,7 @@ describe("create testdirs", () => {
 
 describe("create file trees", () => {
   it("should create a file tree at the specified path", async () => {
-    const dirPath = "./.testdirs/specified-path-sync";
+    const dirPath = "./.testdirs/specified-path";
     cleanup(dirPath);
 
     const files = {
@@ -239,7 +239,7 @@ describe("create file trees", () => {
   });
 
   it("should create files using primitive types", async () => {
-    const dirPath = "./.testdirs/primitive-types-sync";
+    const dirPath = "./.testdirs/primitive-types";
     cleanup(dirPath);
 
     const files = {
@@ -273,7 +273,7 @@ describe("create file trees", () => {
   });
 
   it("should be able to create symlinks", async () => {
-    const dirPath = "./.testdirs/with-links-sync";
+    const dirPath = "./.testdirs/with-links";
     cleanup(dirPath);
 
     const files = {
@@ -310,7 +310,7 @@ describe("create file trees", () => {
   });
 
   it.runIf(os.platform() !== "win32")("should be able to create files with different permissions", async () => {
-    const dirPath = "./.testdirs/with-permissions-sync";
+    const dirPath = "./.testdirs/with-permissions";
     cleanup(dirPath);
 
     const files = {
