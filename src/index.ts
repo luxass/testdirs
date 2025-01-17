@@ -115,11 +115,9 @@ export const testdir: TestdirFn = async function testdir(
   files: DirectoryJSON,
   options?: TestdirOptions,
 ): Promise<TestdirResult> {
-  const resolvedTemporaryDirectory = options?.dirname
+  const fixturePath = options?.dirname
     ? path.resolve(options.dirname)
-    : fs.realpathSync(tmpdir());
-
-  const fixturePath = path.join(resolvedTemporaryDirectory, `testdirs-${randomUUID()}`);
+    : path.join(fs.realpathSync(tmpdir()), `testdirs-${randomUUID()}`);
 
   await fsAsync.mkdir(fixturePath, {
     recursive: true,

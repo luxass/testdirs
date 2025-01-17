@@ -111,11 +111,9 @@ export const testdirSync: TestdirSyncFn = function testdirSync(
   files: DirectoryJSON,
   options?: TestdirOptions,
 ): TestdirSyncResult {
-  const resolvedTemporaryDirectory = options?.dirname
+  const fixturePath = options?.dirname
     ? path.resolve(options.dirname)
-    : fs.realpathSync(tmpdir());
-
-  const fixturePath = path.join(resolvedTemporaryDirectory, `testdirs-${randomUUID()}`);
+    : path.join(fs.realpathSync(tmpdir()), `testdirs-${randomUUID()}`);
 
   fs.mkdirSync(fixturePath, {
     recursive: true,
