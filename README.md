@@ -18,7 +18,8 @@ npm install testdirs --save-dev
 ## 🚀 Usage
 
 ```ts
-import { testdir, type TestdirOptions } from "testdirs";
+import type { TestdirOptions } from "testdirs";
+import { testdir } from "testdirs";
 
 const testdirOptions = {
   dirname: "testdir", // default: a random directory name
@@ -51,7 +52,8 @@ await dir.remove();
 You can create different types of files using the following methods:
 
 ```ts
-import { link, metadata, symlink, testdir, type TestdirOptions } from "testdirs";
+import type { TestdirOptions } from "testdirs";
+import { link, metadata, symlink, testdir } from "testdirs";
 
 const dir = await testdir({
   "file1.txt": "Hello, World!",
@@ -77,8 +79,9 @@ const dir = await testdir({
 You can create a testdir from an existing directory using the `from` method:
 
 ```ts
+import type { FromFileSystemOptions, TestdirOptions, TestdirSyncFromOptions } from "testdirs";
 import assert from "node:assert";
-import { fromFileSystem, type FromFileSystemOptions, testdir, type TestdirOptions, type TestdirSyncFromOptions } from "testdirs";
+import { fromFileSystem, testdir } from "testdirs";
 
 const fromFSOptions = {
   ignore: [".git"], // ignore everything inside the .git directory
