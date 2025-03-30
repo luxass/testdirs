@@ -44,9 +44,6 @@ console.log(dir.path);
 await dir.remove();
 ```
 
-> [!NOTE]
-> There is also a sync version available through the `testdir/sync` import.
-
 ### Different Types of Files
 
 You can create different types of files using the following methods:
