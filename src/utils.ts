@@ -1,7 +1,6 @@
 import type { DirectoryJSON, FromFileSystemOptions } from "./types";
-import { readdirSync, readFileSync, readlinkSync, statSync } from "node:fs";
 import { readdir, readFile, readlink, stat } from "node:fs/promises";
-import { normalize, resolve } from "node:path";
+import { resolve } from "node:path";
 import {
   FIXTURE_ORIGINAL_PATH_SYMBOL,
 } from "./constants";
