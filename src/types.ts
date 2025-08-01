@@ -18,18 +18,18 @@ export type EncodingForFileFn = (path: string) => BufferEncoding | null;
 /**
  * Represents the possible content types that can be stored in a test directory.
  */
-export type DirectoryContent =
-  | string
-  | boolean
-  | number
-  | Uint8Array
-  | null
-  | undefined
-  | bigint
-  | symbol
-  | TestdirSymlink
-  | TestdirLink
-  | TestdirMetadata;
+export type DirectoryContent
+  = | string
+    | boolean
+    | number
+    | Uint8Array
+    | null
+    | undefined
+    | bigint
+    | symbol
+    | TestdirSymlink
+    | TestdirLink
+    | TestdirMetadata;
 
 /**
  * Represents metadata for a file system entry.
