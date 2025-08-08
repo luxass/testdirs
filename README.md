@@ -76,7 +76,7 @@ const dir = await testdir({
 You can create a testdir from an existing directory using the `from` method:
 
 ```ts
-import type { FromFileSystemOptions, TestdirOptions, TestdirSyncFromOptions } from "testdirs";
+import type { FromFileSystemOptions, TestdirOptions } from "testdirs";
 import assert from "node:assert";
 import { fromFileSystem, testdir } from "testdirs";
 
@@ -101,7 +101,7 @@ const testdirOptions = {
   dirname: "testdir", // default: a random directory name
 } satisfies TestdirOptions;
 
-const dir = await testdir(files, testdirOptions);
+const dir2 = await testdir(files, testdirOptions);
 ```
 
 ## 📄 License
