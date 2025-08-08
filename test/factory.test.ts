@@ -104,20 +104,25 @@ describe("createCustomTestdir", () => {
     });
 
     it("should handle async hooks properly", async () => {
-      const delays: number[] = [];
+      const executionOrder: string[] = [];
+
       const beforeHook = vi.fn(async () => {
-        const start = Date.now();
         await new Promise((resolve) => setTimeout(resolve, 10));
-        delays.push(Date.now() - start);
+        executionOrder.push("before-completed");
       });
+
       const afterHook = vi.fn(async () => {
-        const start = Date.now();
         await new Promise((resolve) => setTimeout(resolve, 5));
-        delays.push(Date.now() - start);
+        executionOrder.push("after-completed");
+      });
+
+      const factoryFn = vi.fn(async () => {
+        executionOrder.push("factory-executed");
+        return { success: true };
       });
 
       const testdir = createCustomTestdir(
-        async () => ({ success: true }),
+        factoryFn,
         {
           optionsSchema: z.object({}),
           before: beforeHook,
@@ -130,9 +135,12 @@ describe("createCustomTestdir", () => {
 
       expect(beforeHook).toHaveBeenCalledOnce();
       expect(afterHook).toHaveBeenCalledOnce();
-      expect(delays).toHaveLength(2);
-      expect(delays[0]).toBeGreaterThanOrEqual(10);
-      expect(delays[1]).toBeGreaterThanOrEqual(5);
+      expect(factoryFn).toHaveBeenCalledOnce();
+      expect(executionOrder).toEqual([
+        "before-completed",
+        "factory-executed",
+        "after-completed",
+      ]);
     });
 
     it("should work without hooks", async () => {
