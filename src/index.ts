@@ -134,10 +134,10 @@ export const testdir = createCustomTestdir(async ({ fixturePath, files }) => {
     },
   };
 }, {
-  dirname(options) {
+  async dirname(options) {
     return options?.dirname
       ? path.resolve(options.dirname)
-      : path.join(fs.realpathSync(tmpdir()), `testdirs-${randomUUID()}`);
+      : path.join(await fsAsync.realpath(tmpdir()), `testdirs-${randomUUID()}`);
   },
 }) as TestdirFnWithFrom<TestdirResult>;
 

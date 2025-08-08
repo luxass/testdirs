@@ -198,7 +198,7 @@ export interface TestdirFactoryOptions<TOptionsSchema extends z.ZodType = z.ZodN
   before?: CustomHookFn<TestdirOptions<TOptionsSchema>>;
   after?: CustomHookFn<TestdirOptions<TOptionsSchema>>;
   optionsSchema?: TOptionsSchema;
-  dirname: (options: TestdirOptions<TOptionsSchema>) => string;
+  dirname: (options: TestdirOptions<TOptionsSchema>) => string | Promise<string>;
 }
 
 export interface TestdirFn<TResult = any, TOptions = DefaultTestdirOptions> {

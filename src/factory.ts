@@ -56,7 +56,7 @@ export function createCustomTestdir<
       throw new Error("A dirname function must be provided in factory options.");
     }
 
-    const fixturePath = opts.dirname(parsedOptions);
+    const fixturePath = await opts.dirname(parsedOptions);
 
     if (opts.before) {
       await opts.before(parsedOptions);
