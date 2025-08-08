@@ -107,7 +107,7 @@ export interface TestdirMetadata {
   content: DirectoryContent | DirectoryJSON;
 }
 
-export interface TestdirOptions {
+export interface DefaultTestdirOptions {
   /**
    * The directory name to use.
    * If not provided, a random directory name will be generated.
@@ -115,12 +115,19 @@ export interface TestdirOptions {
   dirname?: string;
 }
 
-export interface TestdirFromOptions extends TestdirOptions {
+export interface TestdirFromOptions extends DefaultTestdirOptions {
   /**
    * Options for customizing the directory reading behavior
    */
   fromFS?: FromFileSystemOptions;
 }
+
+export type TestdirFnWithFrom<
+  TResult = any,
+  TOptions = TestdirFromOptions,
+> = TestdirFn<TResult> & {
+  from: (fsPath: string, options?: TOptions) => Promise<TResult>;
+};
 
 export interface FromFileSystemOptions {
   /**
@@ -183,27 +190,19 @@ export type FactoryFn<TOptions, TResult> = (
   context: FactoryFnContext<TOptions>
 ) => Promise<TResult>;
 
-export type BeforeHookFn<TOptions> = (options: TOptions) => Promise<void> | void;
-export type AfterHookFn<TOptions> = (options: TOptions) => Promise<void> | void;
+export type CustomHookFn<TOptions> = (options: TOptions) => Promise<void> | void;
 
-type OptionsFromSchema<S extends z.ZodTypeAny | undefined> = S extends z.ZodTypeAny
-  ? z.output<S>
-  : TestdirOptions;
+export type MergeOptionsWithSchema<S extends z.ZodTypeAny | undefined> = S extends z.ZodTypeAny
+  ? DefaultTestdirOptions & z.output<S>
+  : DefaultTestdirOptions;
 
 export interface TestdirFactoryOptions<TOptionsSchema extends z.ZodTypeAny | undefined = undefined> {
-  before?: BeforeHookFn<OptionsFromSchema<TOptionsSchema>>;
-  after?: AfterHookFn<OptionsFromSchema<TOptionsSchema>>;
+  before?: CustomHookFn<MergeOptionsWithSchema<TOptionsSchema>>;
+  after?: CustomHookFn<MergeOptionsWithSchema<TOptionsSchema>>;
   optionsSchema?: TOptionsSchema;
-  dirname: (options: OptionsFromSchema<TOptionsSchema>) => string;
+  dirname: (options: MergeOptionsWithSchema<TOptionsSchema>) => string;
 }
 
-export interface TestdirResult {
-  path: string;
-  remove: () => Promise<void>;
-  [Symbol.asyncDispose]: () => Promise<void>;
-}
-
-export interface TestdirFn {
-  (files: DirectoryJSON, options?: TestdirOptions): Promise<TestdirResult>;
-  from: (fsPath: string, options?: TestdirFromOptions) => Promise<TestdirResult>;
+export interface TestdirFn<TResult = any> {
+  (files: DirectoryJSON, options?: DefaultTestdirOptions): Promise<TResult>;
 }

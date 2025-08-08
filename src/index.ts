@@ -87,7 +87,7 @@
  * ```
  */
 
-import type { TestdirFn, TestdirFromOptions } from "./types";
+import type { TestdirFnWithFrom } from "./types";
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import fsAsync from "node:fs/promises";
@@ -96,12 +96,22 @@ import path from "node:path";
 import { createCustomTestdir } from "./factory";
 import { createFileTree, fromFileSystem } from "./utils";
 
-export * from "./constants";
-export * from "./types";
+export {
+  FIXTURE_METADATA_SYMBOL,
+  FIXTURE_ORIGINAL_PATH_SYMBOL,
+  FIXTURE_TYPE_LINK_SYMBOL,
+  FIXTURE_TYPE_SYMLINK_SYMBOL,
+} from "./constants";
 
 export { createFileTree, fromFileSystem };
 
-export const testdir: TestdirFn = createCustomTestdir(async ({ fixturePath, files }) => {
+export interface TestdirResult {
+  path: string;
+  remove: () => Promise<void>;
+  [Symbol.asyncDispose]: () => Promise<void>;
+}
+
+export const testdir: TestdirFnWithFrom<TestdirResult> = createCustomTestdir(async ({ fixturePath, files }) => {
   await fsAsync.mkdir(fixturePath, {
     recursive: true,
   });
@@ -131,10 +141,22 @@ export const testdir: TestdirFn = createCustomTestdir(async ({ fixturePath, file
   },
 });
 
-testdir.from = async (fsPath: string, options?: TestdirFromOptions) => {
-  return testdir(await fromFileSystem(fsPath, {
-    ...options?.fromFS,
-  }), {
-    dirname: options?.dirname,
-  });
+testdir.from = async (fsPath, options) => {
+  const files = await fromFileSystem(fsPath, options?.fromFS);
+  return testdir(files, options);
 };
+
+export type {
+  CustomHookFn,
+  DefaultTestdirOptions,
+  DirectoryContent,
+  DirectoryJSON,
+  EncodingForFileFn,
+  FactoryFn,
+  FSMetadata,
+  TestdirFactoryOptions,
+  TestdirFn,
+  TestdirLink,
+  TestdirMetadata,
+  TestdirSymlink,
+} from "./types";

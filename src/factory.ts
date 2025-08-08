@@ -1,30 +1,27 @@
 import type { z } from "zod";
 import type {
+  DefaultTestdirOptions,
   DirectoryJSON,
   FactoryFn,
+  MergeOptionsWithSchema,
   TestdirFactoryOptions,
   TestdirFn,
-  TestdirFromOptions,
-  TestdirOptions,
-  TestdirResult,
 } from "./types";
-import { fromFileSystem } from "./utils";
 
-type InferOptions<S extends z.ZodTypeAny | undefined> = S extends z.ZodTypeAny
-  ? z.output<S>
-  : TestdirOptions;
-
-export function createCustomTestdir<TOptionsSchema extends z.ZodTypeAny | undefined = undefined>(
-  factoryFn: FactoryFn<InferOptions<TOptionsSchema>, TestdirResult>,
+export function createCustomTestdir<
+  TOptionsSchema extends z.ZodTypeAny | undefined = undefined,
+  TResult = any,
+>(
+  factoryFn: FactoryFn<MergeOptionsWithSchema<TOptionsSchema>, TResult>,
   opts: TestdirFactoryOptions<TOptionsSchema>,
-): TestdirFn {
-  const customTestdir: TestdirFn = async (
+): TestdirFn<TResult> {
+  const customTestdir: TestdirFn<TResult> = async (
     files: DirectoryJSON,
-    rawOptions?: TestdirOptions,
-  ): Promise<TestdirResult> => {
+    rawOptions?: DefaultTestdirOptions,
+  ): Promise<TResult> => {
     const parsedOptions = opts.optionsSchema
-      ? (opts.optionsSchema.parse((rawOptions ?? {}) as unknown) as InferOptions<TOptionsSchema>)
-      : (((rawOptions ?? {}) as unknown) as InferOptions<TOptionsSchema>);
+      ? (opts.optionsSchema.parse((rawOptions ?? {}) as unknown) as MergeOptionsWithSchema<TOptionsSchema>)
+      : (((rawOptions ?? {}) as unknown) as MergeOptionsWithSchema<TOptionsSchema>);
 
     const fixturePath = opts.dirname(parsedOptions);
 
@@ -43,10 +40,6 @@ export function createCustomTestdir<TOptionsSchema extends z.ZodTypeAny | undefi
     }
 
     return result;
-  };
-
-  customTestdir.from = async (fsPath: string, options?: TestdirFromOptions) => {
-    return customTestdir(await fromFileSystem(fsPath, options?.fromFS), { dirname: options?.dirname });
   };
 
   return customTestdir;
