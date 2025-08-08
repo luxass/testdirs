@@ -53,16 +53,18 @@ export function createCustomTestdir<
       await opts.before(parsedOptions);
     }
 
-    const result = await factoryFn({
-      options: parsedOptions,
-      fixturePath,
-      files,
-    });
-
-    if (opts.after) {
-      await opts.after(parsedOptions);
+    let result: TResult;
+    try {
+      result = await factoryFn({
+        options: parsedOptions,
+        fixturePath,
+        files,
+      });
+    } finally {
+      if (opts.after) {
+        await opts.after(parsedOptions);
+      }
     }
-
     return result;
   };
 
