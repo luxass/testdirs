@@ -33,7 +33,8 @@ function parseOptions<TOptionsSchema extends z.ZodType>(
 export function createCustomTestdir<
   TOptionsSchema extends z.ZodType,
   TResult,
-  TExtensions extends Record<string, any>,
+  // eslint-disable-next-line ts/no-empty-object-type
+  TExtensions extends Record<string, any> = {},
 >(
   factoryFn: FactoryFn<TestdirInputOptions<TOptionsSchema>, TResult>,
   opts: TestdirFactoryOptions<TOptionsSchema, TExtensions>,
