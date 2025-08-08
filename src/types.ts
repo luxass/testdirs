@@ -174,8 +174,8 @@ export type TestdirOptions<T extends z.ZodType> = z.input<T>;
 
 export interface TestdirFactoryOptions<
   TOptionsSchema extends z.ZodType,
-  TResult = any,
-  TExtensions extends Record<string, any> = Record<string, any>,
+  TResult,
+  TExtensions extends Record<string, any>,
 > {
   /**
    * A hook that is called before the test directory is created.
@@ -205,4 +205,4 @@ export type ExtendedTestdirFn<
   TOptions,
   TResult,
   TExtensions extends Record<string, any>,
-> = TestdirFn<TOptions, TResult> & TExtensions;
+> = TestdirFn<TOptions, TResult> & ([TExtensions] extends [never] ? object : TExtensions);
