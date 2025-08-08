@@ -111,7 +111,7 @@ export interface TestdirResult {
   [Symbol.asyncDispose]: () => Promise<void>;
 }
 
-export const testdir: TestdirFnWithFrom<TestdirResult> = createCustomTestdir(async ({ fixturePath, files }) => {
+export const testdir = createCustomTestdir(async ({ fixturePath, files }) => {
   await fsAsync.mkdir(fixturePath, {
     recursive: true,
   });
@@ -139,7 +139,7 @@ export const testdir: TestdirFnWithFrom<TestdirResult> = createCustomTestdir(asy
       ? path.resolve(options.dirname)
       : path.join(fs.realpathSync(tmpdir()), `testdirs-${randomUUID()}`);
   },
-});
+}) as TestdirFnWithFrom<TestdirResult>;
 
 testdir.from = async (fsPath, options) => {
   const files = await fromFileSystem(fsPath, options?.fromFS);
