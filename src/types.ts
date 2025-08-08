@@ -192,17 +192,15 @@ export type FactoryFn<TOptions, TResult> = (
 
 export type CustomHookFn<TOptions> = (options: TOptions) => Promise<void> | void;
 
-export type MergeOptionsWithSchema<S extends z.ZodTypeAny | undefined> = S extends z.ZodTypeAny
-  ? DefaultTestdirOptions & z.output<S>
-  : DefaultTestdirOptions;
+export type TestdirOptions<T extends z.ZodType = z.ZodNever> = DefaultTestdirOptions & z.input<T>;
 
-export interface TestdirFactoryOptions<TOptionsSchema extends z.ZodTypeAny | undefined = undefined> {
-  before?: CustomHookFn<MergeOptionsWithSchema<TOptionsSchema>>;
-  after?: CustomHookFn<MergeOptionsWithSchema<TOptionsSchema>>;
+export interface TestdirFactoryOptions<TOptionsSchema extends z.ZodType = z.ZodNever> {
+  before?: CustomHookFn<TestdirOptions<TOptionsSchema>>;
+  after?: CustomHookFn<TestdirOptions<TOptionsSchema>>;
   optionsSchema?: TOptionsSchema;
-  dirname: (options: MergeOptionsWithSchema<TOptionsSchema>) => string;
+  dirname: (options: TestdirOptions<TOptionsSchema>) => string;
 }
 
-export interface TestdirFn<TResult = any> {
-  (files: DirectoryJSON, options?: DefaultTestdirOptions): Promise<TResult>;
+export interface TestdirFn<TResult = any, TOptions = DefaultTestdirOptions> {
+  (files: DirectoryJSON, options?: TOptions): Promise<TResult>;
 }

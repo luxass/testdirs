@@ -1,27 +1,60 @@
-import type { z } from "zod";
 import type {
   DefaultTestdirOptions,
   DirectoryJSON,
   FactoryFn,
-  MergeOptionsWithSchema,
   TestdirFactoryOptions,
   TestdirFn,
+  TestdirOptions,
 } from "./types";
+import { z } from "zod";
+
+function parseOptions<TOptionsSchema extends z.ZodType = z.ZodNever>(
+  rawOptions: DefaultTestdirOptions | undefined,
+  optionsSchema: TOptionsSchema,
+): TestdirOptions<TOptionsSchema> {
+  const baseOptions = rawOptions ?? {};
+
+  try {
+    // extract dirname before validation since it's always allowed
+    const { dirname, ...customOptionsInput } = baseOptions;
+
+    // parse only the custom options
+    const customOptions = optionsSchema.parse(customOptionsInput);
+
+    if (typeof customOptions !== "object") {
+      throw new TypeError("Custom options must be an object.");
+    }
+
+    return {
+      ...customOptions,
+      dirname,
+    } as TestdirOptions<TOptionsSchema>;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const issues = error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join(", ");
+      throw new Error(`Options validation failed: ${issues}`);
+    }
+
+    throw error;
+  }
+}
 
 export function createCustomTestdir<
-  TOptionsSchema extends z.ZodTypeAny | undefined = undefined,
+  TOptionsSchema extends z.ZodType,
   TResult = any,
 >(
-  factoryFn: FactoryFn<MergeOptionsWithSchema<TOptionsSchema>, TResult>,
+  factoryFn: FactoryFn<TestdirOptions<TOptionsSchema>, TResult>,
   opts: TestdirFactoryOptions<TOptionsSchema>,
-): TestdirFn<TResult> {
-  const customTestdir: TestdirFn<TResult> = async (
+): TestdirFn<TResult, TestdirOptions<TOptionsSchema>> {
+  const customTestdir: TestdirFn<TResult, TestdirOptions<TOptionsSchema>> = async (
     files: DirectoryJSON,
     rawOptions?: DefaultTestdirOptions,
   ): Promise<TResult> => {
-    const parsedOptions = opts.optionsSchema
-      ? (opts.optionsSchema.parse((rawOptions ?? {}) as unknown) as MergeOptionsWithSchema<TOptionsSchema>)
-      : (((rawOptions ?? {}) as unknown) as MergeOptionsWithSchema<TOptionsSchema>);
+    const parsedOptions = parseOptions(rawOptions, opts.optionsSchema ?? z.never().optional());
+
+    if (!("dirname" in opts)) {
+      throw new Error("A dirname function must be provided in factory options.");
+    }
 
     const fixturePath = opts.dirname(parsedOptions);
 

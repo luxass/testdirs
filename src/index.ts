@@ -156,6 +156,7 @@ export type {
   FSMetadata,
   TestdirFactoryOptions,
   TestdirFn,
+  TestdirFnWithFrom,
   TestdirLink,
   TestdirMetadata,
   TestdirSymlink,
