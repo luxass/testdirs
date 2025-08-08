@@ -117,7 +117,9 @@ export async function createFileTree(
       await fsAsync.symlink(
         path.normalize(data.path),
         filename,
-        await isDirectory(filename) ? "junction" : "file",
+        await isDirectory(path.resolve(path.dirname(filename), data.path))
+          ? "junction"
+          : "file",
       );
       continue;
     }
