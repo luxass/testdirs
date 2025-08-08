@@ -104,6 +104,56 @@ const testdirOptions = {
 const dir2 = await testdir(files, testdirOptions);
 ```
 
+## createCustomTestdir
+
+Build your own testdir with custom dirname, optional hooks, and a Zod-validated options schema. One compact example:
+
+```ts
+import { randomUUID } from "node:crypto";
+import fs from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { createFileTree, fromFileSystem } from "testdirs";
+import { createCustomTestdir } from "testdirs/factory";
+import { z } from "zod";
+
+// define options
+const options = z.object({ dirname: z.string().optional() });
+
+// create factory with an extension method (from)
+export const myTestdir = createCustomTestdir(async ({ fixturePath, files }) => {
+  await fs.mkdir(fixturePath, { recursive: true });
+  await createFileTree(fixturePath, files);
+  return {
+    path: fixturePath,
+    remove: async () => fs.rm(fixturePath, { recursive: true, force: true }),
+    [Symbol.asyncDispose]: async () => fs.rm(fixturePath, { recursive: true, force: true }),
+  };
+}, {
+  async dirname(options) {
+    return options?.dirname
+      ? path.resolve(options.dirname)
+      : path.join(await fs.realpath(tmpdir()), `my-testdir-${randomUUID()}`);
+  },
+  optionsSchema: options,
+  // The extensions is not required, but allows you to attach additional methods to the testdir function
+  // such as `from`, presets, or convenience wrappers.
+  extensions: {
+    async from(root: string, opts?: z.input<typeof options> & { fromFS?: Parameters<typeof fromFileSystem>[1] }) {
+      const files = await fromFileSystem(root, opts?.fromFS);
+      return myTestdir(files, opts);
+    },
+  },
+});
+
+// Usage
+const dir1 = await myTestdir({ "a.txt": "hello" });
+await dir1.remove();
+
+const dir2 = await myTestdir.from("path/to/fixtures", { dirname: "./tmp" });
+await dir2.remove();
+```
+
 ## 📄 License
 
 Published under [MIT License](./LICENSE).
