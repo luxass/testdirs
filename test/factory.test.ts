@@ -1,7 +1,7 @@
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import z from "zod";
+import { z } from "zod";
 import { createCustomTestdir } from "../src/factory";
 
 describe("createCustomTestdir", () => {

@@ -92,7 +92,7 @@ import { randomUUID } from "node:crypto";
 import fsAsync from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import z from "zod";
+import { z } from "zod";
 import { createCustomTestdir } from "./factory";
 import { createFileTree, fromFileSystem } from "./utils";
 
