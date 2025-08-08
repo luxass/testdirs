@@ -115,7 +115,7 @@ const options = z.object({
   dirname: z.string().optional(),
 });
 
-type TestdirOptions = z.infer<typeof options>;
+export type TestdirOptions = z.infer<typeof options>;
 
 export const testdir = createCustomTestdir(async ({ fixturePath, files }) => {
   await fsAsync.mkdir(fixturePath, {
