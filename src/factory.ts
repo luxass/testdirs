@@ -1,5 +1,6 @@
 import type {
   DirectoryJSON,
+  ExtendedTestdirFn,
   FactoryFn,
   TestdirFactoryOptions,
   TestdirFn,
@@ -32,16 +33,17 @@ function parseOptions<TOptionsSchema extends z.ZodType>(
 export function createCustomTestdir<
   TOptionsSchema extends z.ZodType,
   TResult = any,
+  TExtensions extends Record<string, any> = Record<string, any>,
 >(
   factoryFn: FactoryFn<TestdirOptions<TOptionsSchema>, TResult>,
-  opts: TestdirFactoryOptions<TOptionsSchema>,
-): TestdirFn<TResult, TestdirOptions<TOptionsSchema>> {
+  opts: TestdirFactoryOptions<TOptionsSchema, TResult, TExtensions>,
+): ExtendedTestdirFn<TestdirOptions<TOptionsSchema>, TResult, TExtensions> {
   // check if the factory has dirname provided
   if (!("dirname" in opts)) {
     throw new Error("A dirname function must be provided in factory options.");
   }
 
-  const customTestdir: TestdirFn<TResult, TestdirOptions<TOptionsSchema>> = async (
+  const customTestdir: TestdirFn<TestdirOptions<TOptionsSchema>, TResult> = async (
     files: DirectoryJSON,
     rawOptions?: TestdirOptions<TOptionsSchema>,
   ): Promise<TResult> => {
@@ -68,5 +70,13 @@ export function createCustomTestdir<
     return result;
   };
 
-  return customTestdir;
+  if (opts.extensions) {
+    const extensions = opts.extensions(customTestdir);
+
+    for (const [key, value] of Object.entries(extensions)) {
+      (customTestdir as any)[key] = value;
+    }
+  }
+
+  return customTestdir as ExtendedTestdirFn<TestdirOptions<TOptionsSchema>, TResult, TExtensions>;
 }

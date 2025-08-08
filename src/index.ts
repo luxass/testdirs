@@ -87,7 +87,7 @@
  * ```
  */
 
-import type { TestdirFnWithFrom } from "./types";
+import type { FromFileSystemOptions } from "./types";
 import { randomUUID } from "node:crypto";
 import fsAsync from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -110,6 +110,12 @@ export interface TestdirResult {
   remove: () => Promise<void>;
   [Symbol.asyncDispose]: () => Promise<void>;
 }
+
+const options = z.object({
+  dirname: z.string().optional(),
+});
+
+type TestdirOptions = z.infer<typeof options>;
 
 export const testdir = createCustomTestdir(async ({ fixturePath, files }) => {
   await fsAsync.mkdir(fixturePath, {
@@ -139,19 +145,21 @@ export const testdir = createCustomTestdir(async ({ fixturePath, files }) => {
       ? path.resolve(options.dirname)
       : path.join(await fsAsync.realpath(tmpdir()), `testdirs-${randomUUID()}`);
   },
-  optionsSchema: z.object({
-    dirname: z.string().optional(),
-  }),
-}) as TestdirFnWithFrom<TestdirResult>;
-
-testdir.from = async (fsPath, options) => {
-  const files = await fromFileSystem(fsPath, options?.fromFS);
-  return testdir(files, options);
-};
+  optionsSchema: options,
+  extensions(testdir) {
+    return {
+      from: async (fsPath: string, options?: TestdirOptions & {
+        fromFS?: FromFileSystemOptions;
+      }) => {
+        const files = await fromFileSystem(fsPath, options?.fromFS);
+        return testdir(files, options);
+      },
+    };
+  },
+});
 
 export type {
   CustomHookFn,
-  DefaultTestdirOptions,
   DirectoryContent,
   DirectoryJSON,
   EncodingForFileFn,
@@ -159,7 +167,6 @@ export type {
   FSMetadata,
   TestdirFactoryOptions,
   TestdirFn,
-  TestdirFnWithFrom,
   TestdirLink,
   TestdirMetadata,
   TestdirSymlink,

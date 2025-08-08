@@ -107,28 +107,6 @@ export interface TestdirMetadata {
   content: DirectoryContent | DirectoryJSON;
 }
 
-export interface DefaultTestdirOptions {
-  /**
-   * The directory name to use.
-   * If not provided, a random directory name will be generated.
-   */
-  dirname?: string;
-}
-
-export interface TestdirFromOptions extends DefaultTestdirOptions {
-  /**
-   * Options for customizing the directory reading behavior
-   */
-  fromFS?: FromFileSystemOptions;
-}
-
-export type TestdirFnWithFrom<
-  TResult = any,
-  TOptions = TestdirFromOptions,
-> = TestdirFn<TResult> & {
-  from: (fsPath: string, options?: TOptions) => Promise<TResult>;
-};
-
 export interface FromFileSystemOptions {
   /**
    * An array of file names to
@@ -194,13 +172,24 @@ export type CustomHookFn<TOptions> = (options: TOptions) => Promise<void> | void
 
 export type TestdirOptions<T extends z.ZodType> = z.input<T>;
 
-export interface TestdirFactoryOptions<TOptionsSchema extends z.ZodType> {
+export interface TestdirFactoryOptions<
+  TOptionsSchema extends z.ZodType,
+  TResult = any,
+  TExtensions extends Record<string, any> = Record<string, any>,
+> {
   before?: CustomHookFn<TestdirOptions<TOptionsSchema>>;
   after?: CustomHookFn<TestdirOptions<TOptionsSchema>>;
   dirname: (options: TestdirOptions<TOptionsSchema>) => string | Promise<string>;
   optionsSchema: TOptionsSchema;
+  extensions?: (testdir: TestdirFn<TestdirOptions<TOptionsSchema>, TResult>) => TExtensions;
 }
 
-export interface TestdirFn<TResult = any, TOptions = DefaultTestdirOptions> {
+export interface TestdirFn<TOptions, TResult> {
   (files: DirectoryJSON, options?: TOptions): Promise<TResult>;
 }
+
+export type ExtendedTestdirFn<
+  TOptions,
+  TResult,
+  TExtensions extends Record<string, any>,
+> = TestdirFn<TOptions, TResult> & TExtensions;
