@@ -177,10 +177,23 @@ export interface TestdirFactoryOptions<
   TResult = any,
   TExtensions extends Record<string, any> = Record<string, any>,
 > {
+  /**
+   * A hook that is called before the test directory is created.
+   */
   before?: CustomHookFn<TestdirOptions<TOptionsSchema>>;
+
+  /**
+   * A hook that is called after the test directory is created.
+   */
   after?: CustomHookFn<TestdirOptions<TOptionsSchema>>;
+
   dirname: (options: TestdirOptions<TOptionsSchema>) => string | Promise<string>;
+
+  /**
+   * The schema for the options object.
+   */
   optionsSchema: TOptionsSchema;
+
   extensions?: (testdir: TestdirFn<TestdirOptions<TOptionsSchema>, TResult>) => TExtensions;
 }
 
