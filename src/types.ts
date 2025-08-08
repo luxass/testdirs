@@ -204,5 +204,6 @@ export interface TestdirFn<TOptions, TResult> {
 export type ExtendedTestdirFn<
   TOptions,
   TResult,
-  TExtensions extends Record<string, any>,
-> = TestdirFn<TOptions, TResult> & ([TExtensions] extends [never] ? object : TExtensions);
+  // eslint-disable-next-line ts/no-empty-object-type
+  TExtensions extends Record<string, any> = {},
+> = TestdirFn<TOptions, TResult> & TExtensions;

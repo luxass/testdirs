@@ -33,7 +33,7 @@ function parseOptions<TOptionsSchema extends z.ZodType>(
 export function createCustomTestdir<
   TOptionsSchema extends z.ZodType,
   TResult,
-  TExtensions extends Record<string, any> = never,
+  TExtensions extends Record<string, any>,
 >(
   factoryFn: FactoryFn<TestdirOptions<TOptionsSchema>, TResult>,
   opts: TestdirFactoryOptions<TOptionsSchema, TResult, TExtensions>,
