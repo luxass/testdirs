@@ -146,15 +146,13 @@ export const testdir = createCustomTestdir(async ({ fixturePath, files }) => {
       : path.join(await fsAsync.realpath(tmpdir()), `testdirs-${randomUUID()}`);
   },
   optionsSchema: options,
-  extensions(testdir) {
-    return {
-      from: async (fsPath: string, options?: TestdirOptions & {
-        fromFS?: FromFileSystemOptions;
-      }) => {
-        const files = await fromFileSystem(fsPath, options?.fromFS);
-        return testdir(files, options);
-      },
-    };
+  extensions: {
+    from: async (fsPath: string, options?: TestdirOptions & {
+      fromFS?: FromFileSystemOptions;
+    }) => {
+      const files = await fromFileSystem(fsPath, options?.fromFS);
+      return testdir(files, options);
+    },
   },
 });
 

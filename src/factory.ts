@@ -36,7 +36,7 @@ export function createCustomTestdir<
   TExtensions extends Record<string, any>,
 >(
   factoryFn: FactoryFn<TestdirOptions<TOptionsSchema>, TResult>,
-  opts: TestdirFactoryOptions<TOptionsSchema, TResult, TExtensions>,
+  opts: TestdirFactoryOptions<TOptionsSchema, TExtensions>,
 ): ExtendedTestdirFn<TestdirOptions<TOptionsSchema>, TResult, TExtensions> {
   // check if the factory has dirname provided
   if (!("dirname" in opts)) {
@@ -71,7 +71,7 @@ export function createCustomTestdir<
   };
 
   if (opts.extensions) {
-    const extensions = opts.extensions(customTestdir);
+    const extensions = opts.extensions;
 
     for (const [key, value] of Object.entries(extensions)) {
       (customTestdir as any)[key] = value;

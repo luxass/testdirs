@@ -174,7 +174,6 @@ export type TestdirOptions<T extends z.ZodType> = z.input<T>;
 
 export interface TestdirFactoryOptions<
   TOptionsSchema extends z.ZodType,
-  TResult,
   TExtensions extends Record<string, any>,
 > {
   /**
@@ -194,7 +193,7 @@ export interface TestdirFactoryOptions<
    */
   optionsSchema: TOptionsSchema;
 
-  extensions?: (testdir: TestdirFn<TestdirOptions<TOptionsSchema>, TResult>) => TExtensions;
+  extensions?: TExtensions;
 }
 
 export interface TestdirFn<TOptions, TResult> {
