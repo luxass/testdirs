@@ -192,13 +192,13 @@ export type FactoryFn<TOptions, TResult> = (
 
 export type CustomHookFn<TOptions> = (options: TOptions) => Promise<void> | void;
 
-export type TestdirOptions<T extends z.ZodType = z.ZodNever> = DefaultTestdirOptions & z.input<T>;
+export type TestdirOptions<T extends z.ZodType> = z.input<T>;
 
-export interface TestdirFactoryOptions<TOptionsSchema extends z.ZodType = z.ZodNever> {
+export interface TestdirFactoryOptions<TOptionsSchema extends z.ZodType> {
   before?: CustomHookFn<TestdirOptions<TOptionsSchema>>;
   after?: CustomHookFn<TestdirOptions<TOptionsSchema>>;
-  optionsSchema?: TOptionsSchema;
   dirname: (options: TestdirOptions<TOptionsSchema>) => string | Promise<string>;
+  optionsSchema: TOptionsSchema;
 }
 
 export interface TestdirFn<TResult = any, TOptions = DefaultTestdirOptions> {

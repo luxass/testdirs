@@ -89,10 +89,10 @@
 
 import type { TestdirFnWithFrom } from "./types";
 import { randomUUID } from "node:crypto";
-import fs from "node:fs";
 import fsAsync from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import z from "zod";
 import { createCustomTestdir } from "./factory";
 import { createFileTree, fromFileSystem } from "./utils";
 
@@ -139,6 +139,9 @@ export const testdir = createCustomTestdir(async ({ fixturePath, files }) => {
       ? path.resolve(options.dirname)
       : path.join(await fsAsync.realpath(tmpdir()), `testdirs-${randomUUID()}`);
   },
+  optionsSchema: z.object({
+    dirname: z.string().optional(),
+  }),
 }) as TestdirFnWithFrom<TestdirResult>;
 
 testdir.from = async (fsPath, options) => {
