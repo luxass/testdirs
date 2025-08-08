@@ -6,7 +6,7 @@
     "./helpers": "./src/helpers.ts"
   },
   "exclude": [
-    "tsup.config.ts",
+    "tsdown.config.ts",
     "eslint.config.mjs",
     "pnpm-lock.yaml",
     ".github/**",
