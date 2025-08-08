@@ -9,6 +9,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request_target' && github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -46,12 +50,11 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   test:
-    name: "test (os: ${{ matrix.os }}, node: ${{ matrix.node }}, vitest: ${{ matrix.vitest }})"
+    name: "test (os: ${{ matrix.os }}, node: ${{ matrix.node }})"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         node: [20, 22, 24]
-        vitest: [latest, 2.0.5, 2.1.3, beta]
         os:
           - ubuntu-latest
           - macos-latest
@@ -69,12 +72,10 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ matrix.node }}
+          cache: pnpm
 
       - name: install
         run: pnpm install --frozen-lockfile
-
-      - name: install vitest ${{ matrix.vitest }}
-        run: pnpm add -D vitest@${{ matrix.vitest }}
 
       - name: build
         run: pnpm build

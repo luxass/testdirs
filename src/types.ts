@@ -3,6 +3,7 @@
  * @module types
  */
 
+import type { z } from "zod";
 import type {
   FIXTURE_TYPE_LINK_SYMBOL,
   FIXTURE_TYPE_SYMLINK_SYMBOL,
@@ -106,21 +107,6 @@ export interface TestdirMetadata {
   content: DirectoryContent | DirectoryJSON;
 }
 
-export interface TestdirOptions {
-  /**
-   * The directory name to use.
-   * If not provided, a random directory name will be generated.
-   */
-  dirname?: string;
-}
-
-export interface TestdirFromOptions extends TestdirOptions {
-  /**
-   * Options for customizing the directory reading behavior
-   */
-  fromFS?: FromFileSystemOptions;
-}
-
 export interface FromFileSystemOptions {
   /**
    * An array of file names to
@@ -171,3 +157,53 @@ export interface FromFileSystemOptions {
    */
   getEncodingForFile?: EncodingForFileFn;
 }
+
+export interface FactoryFnContext<TOptions> {
+  readonly options: TOptions;
+  readonly fixturePath: string;
+  readonly files: DirectoryJSON;
+}
+
+export type FactoryFn<TOptions, TResult> = (
+  context: FactoryFnContext<TOptions>
+) => Promise<TResult> | TResult;
+
+export type CustomHookFn<TOptions> = (options: TOptions) => Promise<void> | void;
+
+export type TestdirOptions<T extends z.ZodType> = z.input<T>;
+
+export interface TestdirFactoryOptions<
+  TOptionsSchema extends z.ZodType,
+  TResult,
+  TExtensions extends Record<string, any>,
+> {
+  /**
+   * A hook that is called before the test directory is created.
+   */
+  before?: CustomHookFn<TestdirOptions<TOptionsSchema>>;
+
+  /**
+   * A hook that is called after the test directory is created.
+   */
+  after?: CustomHookFn<TestdirOptions<TOptionsSchema>>;
+
+  dirname: (options: TestdirOptions<TOptionsSchema>) => string | Promise<string>;
+
+  /**
+   * The schema for the options object.
+   */
+  optionsSchema: TOptionsSchema;
+
+  extensions?: (testdir: TestdirFn<TestdirOptions<TOptionsSchema>, TResult>) => TExtensions;
+}
+
+export interface TestdirFn<TOptions, TResult> {
+  (files: DirectoryJSON, options?: TOptions): Promise<TResult>;
+}
+
+export type ExtendedTestdirFn<
+  TOptions,
+  TResult,
+  // eslint-disable-next-line ts/no-empty-object-type
+  TExtensions extends Record<string, any> = {},
+> = TestdirFn<TOptions, TResult> & TExtensions;

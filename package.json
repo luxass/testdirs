@@ -19,6 +19,7 @@
   ],
   "exports": {
     ".": "./dist/index.js",
+    "./factory": "./dist/factory.js",
     "./helpers": "./dist/helpers.js",
     "./package.json": "./package.json"
   },
@@ -48,6 +49,7 @@
     "publint": "^0.3.12",
     "tsdown": "^0.13.0",
     "typescript": "^5.9.2",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "zod": "^4.0.15"
   }
 }
