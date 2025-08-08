@@ -166,7 +166,7 @@ export interface FactoryFnContext<TOptions> {
 
 export type FactoryFn<TOptions, TResult> = (
   context: FactoryFnContext<TOptions>
-) => Promise<TResult>;
+) => Promise<TResult> | TResult;
 
 export type CustomHookFn<TOptions> = (options: TOptions) => Promise<void> | void;
 
