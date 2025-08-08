@@ -3,6 +3,7 @@
  * @module types
  */
 
+import type { z } from "zod";
 import type {
   FIXTURE_TYPE_LINK_SYMBOL,
   FIXTURE_TYPE_SYMLINK_SYMBOL,
@@ -170,4 +171,39 @@ export interface FromFileSystemOptions {
    * ```
    */
   getEncodingForFile?: EncodingForFileFn;
+}
+
+export interface FactoryFnContext<TOptions> {
+  options: TOptions;
+  fixturePath: string;
+  files: DirectoryJSON;
+}
+
+export type FactoryFn<TOptions, TResult> = (
+  context: FactoryFnContext<TOptions>
+) => Promise<TResult>;
+
+export type BeforeHookFn<TOptions> = (options: TOptions) => Promise<void> | void;
+export type AfterHookFn<TOptions> = (options: TOptions) => Promise<void> | void;
+
+type OptionsFromSchema<S extends z.ZodTypeAny | undefined> = S extends z.ZodTypeAny
+  ? z.output<S>
+  : TestdirOptions;
+
+export interface TestdirFactoryOptions<TOptionsSchema extends z.ZodTypeAny | undefined = undefined> {
+  before?: BeforeHookFn<OptionsFromSchema<TOptionsSchema>>;
+  after?: AfterHookFn<OptionsFromSchema<TOptionsSchema>>;
+  optionsSchema?: TOptionsSchema;
+  dirname: (options: OptionsFromSchema<TOptionsSchema>) => string;
+}
+
+export interface TestdirResult {
+  path: string;
+  remove: () => Promise<void>;
+  [Symbol.asyncDispose]: () => Promise<void>;
+}
+
+export interface TestdirFn {
+  (files: DirectoryJSON, options?: TestdirOptions): Promise<TestdirResult>;
+  from: (fsPath: string, options?: TestdirFromOptions) => Promise<TestdirResult>;
 }
