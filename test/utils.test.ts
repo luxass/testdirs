@@ -146,7 +146,7 @@ describe("create file trees", () => {
       },
     };
 
-    await expect(() => createFileTree(dirPath, files)).rejects.toThrowError("EACCES: permission denied");
+    await expect(createFileTree(dirPath, files)).rejects.toThrowError("EACCES: permission denied");
 
     const file1Content = await fsAsync.readFile(path.resolve(dirPath, "file1.txt"), "utf-8");
     expect(file1Content).toBe("Hello, world!");
@@ -168,12 +168,12 @@ describe("create file trees", () => {
 
     // because the dir has a non writable permission, it should throw an error
     // because we can't create the file inside the dir
-    await expect(() => fsAsync.readFile(
+    await expect(fsAsync.readFile(
       path.resolve(dirPath, "dir1/dir2/file3.txt"),
       "utf-8",
     )).rejects.toThrowError("ENOENT: no such file or directory");
 
-    await expect(() => fsAsync.writeFile(path.resolve(dirPath, "dir1/dir2/file3.txt"), "Hello, world!")).rejects.toThrowError("EACCES: permission denied");
+    await expect(fsAsync.writeFile(path.resolve(dirPath, "dir1/dir2/file3.txt"), "Hello, world!")).rejects.toThrowError("EACCES: permission denied");
   });
 });
 
