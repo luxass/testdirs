@@ -164,6 +164,7 @@ export type {
   DirectoryJSON,
   EncodingForFileFn,
   FactoryFn,
+  FromFileSystemOptions,
   FSMetadata,
   TestdirFactoryOptions,
   TestdirFn,
