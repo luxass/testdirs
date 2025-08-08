@@ -4,14 +4,14 @@ import type {
   FactoryFn,
   TestdirFactoryOptions,
   TestdirFn,
-  TestdirOptions,
+  TestdirInputOptions,
 } from "./types";
 import { z } from "zod";
 
 function parseOptions<TOptionsSchema extends z.ZodType>(
-  rawOptions: TestdirOptions<TOptionsSchema> | undefined,
+  rawOptions: TestdirInputOptions<TOptionsSchema> | undefined,
   optionsSchema: TOptionsSchema,
-): TestdirOptions<TOptionsSchema> {
+): TestdirInputOptions<TOptionsSchema> {
   try {
     const parsedOptions = optionsSchema.parse(rawOptions ?? {});
 
@@ -19,7 +19,7 @@ function parseOptions<TOptionsSchema extends z.ZodType>(
       throw new TypeError("Custom options must be an object.");
     }
 
-    return parsedOptions as TestdirOptions<TOptionsSchema>;
+    return parsedOptions as TestdirInputOptions<TOptionsSchema>;
   } catch (error) {
     if (error instanceof z.ZodError) {
       const issues = error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join(", ");
@@ -35,17 +35,17 @@ export function createCustomTestdir<
   TResult,
   TExtensions extends Record<string, any>,
 >(
-  factoryFn: FactoryFn<TestdirOptions<TOptionsSchema>, TResult>,
+  factoryFn: FactoryFn<TestdirInputOptions<TOptionsSchema>, TResult>,
   opts: TestdirFactoryOptions<TOptionsSchema, TExtensions>,
-): ExtendedTestdirFn<TestdirOptions<TOptionsSchema>, TResult, TExtensions> {
+): ExtendedTestdirFn<TestdirInputOptions<TOptionsSchema>, TResult, TExtensions> {
   // check if the factory has dirname provided
   if (!("dirname" in opts)) {
     throw new Error("A dirname function must be provided in factory options.");
   }
 
-  const customTestdir: TestdirFn<TestdirOptions<TOptionsSchema>, TResult> = async (
+  const customTestdir: TestdirFn<TestdirInputOptions<TOptionsSchema>, TResult> = async (
     files: DirectoryJSON,
-    rawOptions?: TestdirOptions<TOptionsSchema>,
+    rawOptions?: TestdirInputOptions<TOptionsSchema>,
   ): Promise<TResult> => {
     const parsedOptions = parseOptions(rawOptions, opts.optionsSchema);
 
@@ -78,5 +78,5 @@ export function createCustomTestdir<
     }
   }
 
-  return customTestdir as ExtendedTestdirFn<TestdirOptions<TOptionsSchema>, TResult, TExtensions>;
+  return customTestdir as ExtendedTestdirFn<TestdirInputOptions<TOptionsSchema>, TResult, TExtensions>;
 }

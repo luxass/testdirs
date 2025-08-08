@@ -170,7 +170,7 @@ export type FactoryFn<TOptions, TResult> = (
 
 export type CustomHookFn<TOptions> = (options: TOptions) => Promise<void> | void;
 
-export type TestdirOptions<T extends z.ZodType> = z.input<T>;
+export type TestdirInputOptions<T extends z.ZodType> = z.input<T>;
 
 export interface TestdirFactoryOptions<
   TOptionsSchema extends z.ZodType,
@@ -179,14 +179,14 @@ export interface TestdirFactoryOptions<
   /**
    * A hook that is called before the test directory is created.
    */
-  before?: CustomHookFn<TestdirOptions<TOptionsSchema>>;
+  before?: CustomHookFn<TestdirInputOptions<TOptionsSchema>>;
 
   /**
    * A hook that is called after the test directory is created.
    */
-  after?: CustomHookFn<TestdirOptions<TOptionsSchema>>;
+  after?: CustomHookFn<TestdirInputOptions<TOptionsSchema>>;
 
-  dirname: (options: TestdirOptions<TOptionsSchema>) => string | Promise<string>;
+  dirname: (options: TestdirInputOptions<TOptionsSchema>) => string | Promise<string>;
 
   /**
    * The schema for the options object.
