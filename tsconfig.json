@@ -8,7 +8,6 @@
     "declaration": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "isolatedDeclarations": true,
     "isolatedModules": true,
     "skipLibCheck": true
   },
