@@ -1,6 +1,6 @@
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import { z } from "zod";
 import { createCustomTestdir } from "../src/factory";
 
@@ -282,5 +282,162 @@ describe("createCustomTestdir", () => {
 
     expect(asyncDirname).toHaveBeenCalledOnce();
     expect(result.path).toBe(path.join(tmpdir(), "async-dirname"));
+  });
+
+  describe("extension system", () => {
+    it("should create extensions and make them available on testdir", async () => {
+      const factoryFn = vi.fn(async ({ options }) => ({ result: options }));
+
+      const testdir = createCustomTestdir(factoryFn, {
+        optionsSchema: z.object({ debug: z.boolean().optional() }),
+        dirname: () => path.join(tmpdir(), "extension-test"),
+        extensions: {
+          hello: (name: string) => `Hello, ${name}!`,
+          withDebug: (files: any) => testdir(files, { debug: true }),
+          quick: () => testdir({}),
+        },
+      });
+
+      expect(typeof testdir.hello).toBe("function");
+      expect(typeof testdir.withDebug).toBe("function");
+      expect(typeof testdir.quick).toBe("function");
+
+      expectTypeOf(testdir.hello).toEqualTypeOf<(name: string) => string>();
+      expectTypeOf(testdir.withDebug).toEqualTypeOf<(files: any) => Promise<{
+        result: any;
+      }>>();
+      expectTypeOf(testdir.quick).toEqualTypeOf<() => Promise<{
+        result: any;
+      }>>();
+
+      expect(testdir.hello("World")).toBe("Hello, World!");
+
+      const quickResult = await testdir.quick();
+      expect(quickResult.result).toEqual({});
+
+      const debugResult = await testdir.withDebug({});
+      expect(debugResult.result).toEqual({ debug: true });
+    });
+
+    it("should work without extensions", async () => {
+      const factoryFn = vi.fn(async () => ({ success: true }));
+
+      const testdir = createCustomTestdir(factoryFn, {
+        optionsSchema: z.object({}),
+        dirname: () => path.join(tmpdir(), "no-extensions"),
+      });
+
+      const result = await testdir({});
+      expect(result.success).toBe(true);
+
+      expect(testdir).not.toHaveProperty("hello");
+      expect(testdir).not.toHaveProperty("withDebug");
+      expect(testdir).not.toHaveProperty("quick");
+    });
+
+    it("should handle complex extensions with multiple parameters", async () => {
+      const factoryFn = vi.fn(async ({ options, files }) => ({ options, files }));
+
+      const testdir = createCustomTestdir(factoryFn, {
+        optionsSchema: z.object({
+          env: z.string().optional(),
+          port: z.number().optional(),
+        }),
+        dirname: () => path.join(tmpdir(), "complex-extensions"),
+        extensions: {
+          withEnv: (env: string, files: any = {}) => testdir(files, { env }),
+          withPort: (port: number) => testdir({}, { port }),
+          withBoth: (env: string, port: number, files: any = {}) =>
+            testdir(files, { env, port }),
+        },
+      });
+
+      const envResult = await testdir.withEnv("production", { "app.js": "console.log('prod');" });
+      expect(envResult.options.env).toBe("production");
+      expect(envResult.files).toEqual({ "app.js": "console.log('prod');" });
+
+      const portResult = await testdir.withPort(3000);
+      expect(portResult.options.port).toBe(3000);
+
+      const bothResult = await testdir.withBoth("staging", 8080, { "config.json": "{}" });
+      expect(bothResult.options).toEqual({ env: "staging", port: 8080 });
+      expect(bothResult.files).toEqual({ "config.json": "{}" });
+    });
+
+    it("should allow extensions to access parsed options from factory", async () => {
+      const factoryFn = vi.fn(async ({ options }) => ({ receivedOptions: options }));
+
+      const testdir = createCustomTestdir(factoryFn, {
+        optionsSchema: z.object({ baseUrl: z.string().default("http://localhost") }),
+        dirname: () => path.join(tmpdir(), "options-access"),
+        extensions: {
+          apiCall: (_endpoint: string) => testdir({}, { baseUrl: "https://api.example.com" }),
+          localCall: (_endpoint: string) => testdir({}), // Uses default baseUrl
+        },
+      });
+
+      const apiResult = await testdir.apiCall("/users");
+      expect(apiResult.receivedOptions.baseUrl).toBe("https://api.example.com");
+
+      const localResult = await testdir.localCall("/health");
+      expect(localResult.receivedOptions.baseUrl).toBe("http://localhost");
+    });
+
+    it("should handle errors thrown by extension methods", async () => {
+      const factoryFn = vi.fn(async () => ({ success: true }));
+
+      const testdir = createCustomTestdir(factoryFn, {
+        optionsSchema: z.object({}),
+        dirname: () => path.join(tmpdir(), "error-test"),
+        extensions: {
+          failing: () => {
+            throw new Error("Extension error");
+          },
+          asyncFailing: async () => {
+            throw new Error("Async extension error");
+          },
+        },
+      });
+
+      expect(() => testdir.failing()).toThrow("Extension error");
+      await expect(testdir.asyncFailing()).rejects.toThrow("Async extension error");
+    });
+
+    it("should handle errors in factory function while using extensions", async () => {
+      const factoryFn = vi.fn(async () => {
+        throw new Error("Factory error");
+      });
+
+      const testdir = createCustomTestdir(factoryFn, {
+        optionsSchema: z.object({}),
+        dirname: () => path.join(tmpdir(), "factory-error-test"),
+        extensions: {
+          callFactory: () => testdir({}),
+        },
+      });
+
+      await expect(testdir.callFactory()).rejects.toThrow("Factory error");
+    });
+
+    it("should handle validation errors in extensions", async () => {
+      const factoryFn = vi.fn(async ({ options }) => ({ options }));
+
+      const testdir = createCustomTestdir(factoryFn, {
+        optionsSchema: z.object({
+          required: z.string(),
+          port: z.number(),
+        }),
+        dirname: () => path.join(tmpdir(), "validation-error-test"),
+        extensions: {
+          withInvalidOptions: () => testdir({}, { port: "not-a-number" } as any),
+          withMissingRequired: () => testdir({}, {
+            port: 3000,
+          } as any),
+        },
+      });
+
+      await expect(testdir.withInvalidOptions()).rejects.toThrow("Options validation failed");
+      await expect(testdir.withMissingRequired()).rejects.toThrow("Options validation failed");
+    });
   });
 });
