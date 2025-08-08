@@ -159,9 +159,9 @@ export interface FromFileSystemOptions {
 }
 
 export interface FactoryFnContext<TOptions> {
-  options: TOptions;
-  fixturePath: string;
-  files: DirectoryJSON;
+  readonly options: TOptions;
+  readonly fixturePath: string;
+  readonly files: DirectoryJSON;
 }
 
 export type FactoryFn<TOptions, TResult> = (
