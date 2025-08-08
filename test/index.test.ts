@@ -54,7 +54,7 @@ describe("create testdirs", () => {
     expect(await existsAsync(dir.path)).toBe(true);
 
     expect(await fsAsync.readdir(dir.path)).toEqual(["file1.txt"]);
-    expect(dir.path).toContain(path.normalize(`${OS_TMP_DIR}/testdirs-`));
+    expect(dir.path).toContain(path.normalize(`${await fsAsync.realpath(OS_TMP_DIR)}/testdirs-`));
 
     // removing directory
     await dir.remove();
