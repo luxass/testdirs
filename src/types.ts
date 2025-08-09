@@ -197,7 +197,7 @@ export interface TestdirFactoryOptions<
 }
 
 export interface TestdirFn<TOptions, TResult> {
-  (files: DirectoryJSON, options?: TOptions): Promise<TResult>;
+  (files?: DirectoryJSON, options?: TOptions): Promise<TResult>;
 }
 
 export type ExtendedTestdirFn<

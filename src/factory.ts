@@ -45,7 +45,7 @@ export function createCustomTestdir<
   }
 
   const customTestdir: TestdirFn<TestdirInputOptions<TOptionsSchema>, TResult> = async (
-    files: DirectoryJSON,
+    files?: DirectoryJSON,
     rawOptions?: TestdirInputOptions<TOptionsSchema>,
   ): Promise<TResult> => {
     const parsedOptions = parseOptions(rawOptions, opts.optionsSchema);
@@ -61,7 +61,7 @@ export function createCustomTestdir<
       result = await factoryFn({
         options: parsedOptions,
         fixturePath,
-        files,
+        files: files ?? {},
       });
     } finally {
       if (opts.after) {
