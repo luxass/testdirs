@@ -228,7 +228,7 @@ describe("captureSnapshot", () => {
     await using dir = await testdir({});
 
     const result = await captureSnapshot(dir.path);
-    const dirName = dir.path.split("/").pop()!;
+    const dirName = normalize(dir.path).split("/").pop()!;
     expect(result).toBe(`${dirName}/`);
   });
 
@@ -238,7 +238,7 @@ describe("captureSnapshot", () => {
     });
 
     const result = await captureSnapshot(dir.path);
-    const dirName = dir.path.split("/").pop()!;
+    const dirName = normalize(dir.path).split("/").pop()!;
 
     expect(result).toBe([
       `${dirName}/`,
@@ -254,7 +254,7 @@ describe("captureSnapshot", () => {
     });
 
     const result = await captureSnapshot(dir.path);
-    const dirName = dir.path.split("/").pop()!;
+    const dirName = normalize(dir.path).split("/").pop()!;
 
     expect(result).toBe([
       `${dirName}/`,
@@ -273,7 +273,7 @@ describe("captureSnapshot", () => {
     });
 
     const result = await captureSnapshot(dir.path);
-    const dirName = dir.path.split("/").pop()!;
+    const dirName = normalize(dir.path).split("/").pop()!;
 
     expect(result).toBe([
       `${dirName}/`,
@@ -304,7 +304,7 @@ describe("captureSnapshot", () => {
     });
 
     const result = await captureSnapshot(dir.path);
-    const dirName = dir.path.split("/").pop()!;
+    const dirName = normalize(dir.path).split("/").pop()!;
 
     expect(result).toBe([
       `${dirName}/`,
@@ -334,7 +334,7 @@ describe("captureSnapshot", () => {
     });
 
     const result = await captureSnapshot(dir.path);
-    const dirName = dir.path.split("/").pop()!;
+    const dirName = normalize(dir.path).split("/").pop()!;
 
     expect(result).toBe([
       `${dirName}/`,
@@ -354,7 +354,7 @@ describe("captureSnapshot", () => {
     });
 
     const result = await captureSnapshot(dir.path);
-    const dirName = dir.path.split("/").pop()!;
+    const dirName = normalize(dir.path).split("/").pop()!;
 
     expect(result).toBe([
       `${dirName}/`,
@@ -377,7 +377,7 @@ describe("captureSnapshot", () => {
     });
 
     const result = await captureSnapshot(dir.path);
-    const dirName = dir.path.split("/").pop()!;
+    const dirName = normalize(dir.path).split("/").pop()!;
 
     expect(result).toBe([
       `${dirName}/`,
