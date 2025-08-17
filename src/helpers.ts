@@ -45,7 +45,8 @@ import type {
   TestdirMetadata,
   TestdirSymlink,
 } from "./types";
-import { normalize } from "node:path";
+import { readdir } from "node:fs/promises";
+import { basename, join, normalize } from "node:path";
 import {
   FIXTURE_METADATA_SYMBOL,
   FIXTURE_TYPE_LINK_SYMBOL,
@@ -152,4 +153,63 @@ export function isPrimitive(data: unknown): data is Exclude<DirectoryContent, Te
     || typeof data === "symbol"
     || data instanceof Uint8Array
   );
+}
+
+/**
+ * Capture a snapshot of a directory tree structure as a tree-view string
+ * @param {string} path The directory path to capture
+ * @returns {Promise<string>} Tree-view representation of the directory structure
+ */
+export async function captureSnapshot(path: string): Promise<string> {
+  const entries = await readdir(path, { recursive: true, withFileTypes: true });
+  
+  const tree = new Map<string, Array<{ name: string; isDir: boolean }>>();
+  
+  for (const entry of entries) {
+    const fullPath = join(entry.parentPath || "", entry.name);
+    const relativePath = fullPath.replace(path, "").replace(/^\//, "");
+    const parentDir = relativePath.includes("/") ? relativePath.substring(0, relativePath.lastIndexOf("/")) : "";
+    
+    if (!tree.has(parentDir)) {
+      tree.set(parentDir, []);
+    }
+    
+    tree.get(parentDir)!.push({
+      name: entry.name,
+      isDir: entry.isDirectory(),
+    });
+  }
+  
+  for (const children of tree.values()) {
+    children.sort((a, b) => {
+      if (a.isDir !== b.isDir) {
+        return a.isDir ? -1 : 1;
+      }
+      return a.name.localeCompare(b.name);
+    });
+  }
+  
+  const result: string[] = [`${basename(path)}/`];
+  
+  function renderTree(dirPath: string, prefix: string): void {
+    const children = tree.get(dirPath) || [];
+    
+    children.forEach((child, index) => {
+      const isLast = index === children.length - 1;
+      const connector = isLast ? "└── " : "├── ";
+      const childName = child.name + (child.isDir ? "/" : "");
+      
+      result.push(prefix + connector + childName);
+      
+      if (child.isDir) {
+        const childPath = dirPath ? `${dirPath}/${child.name}` : child.name;
+        const newPrefix = prefix + (isLast ? "    " : "│   ");
+        renderTree(childPath, newPrefix);
+      }
+    });
+  }
+  
+  renderTree("", "");
+  
+  return result.join("\n");
 }
