@@ -204,7 +204,7 @@ export async function captureSnapshot(path: string): Promise<string> {
 
   // for debug only
   if (platform() === "win32") {
-    console.error("MAP:", JSON.stringify(tree, null, 2));
+    console.error("MAP:", Object.fromEntries(tree));
   }
 
   function renderTree(dirPath: string, prefix: string): void {
