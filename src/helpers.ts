@@ -47,7 +47,7 @@ import type {
 } from "./types";
 import { readdir } from "node:fs/promises";
 import { platform } from "node:os";
-import { basename, join, normalize } from "node:path";
+import { basename, join, normalize, sep } from "node:path";
 import {
   FIXTURE_METADATA_SYMBOL,
   FIXTURE_TYPE_LINK_SYMBOL,
@@ -174,7 +174,7 @@ export async function captureSnapshot(path: string): Promise<string> {
     const fullPath = normalize(join(entry.parentPath || "", entry.name));
     const relativePath = normalize(fullPath.slice(basePathLength + 1));
 
-    const lastSlashIndex = relativePath.lastIndexOf("/");
+    const lastSlashIndex = relativePath.lastIndexOf(sep);
     const parentDir = lastSlashIndex === -1 ? "" : relativePath.slice(0, lastSlashIndex);
 
     let children = tree.get(parentDir);
