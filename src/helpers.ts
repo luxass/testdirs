@@ -46,8 +46,7 @@ import type {
   TestdirSymlink,
 } from "./types";
 import { readdir } from "node:fs/promises";
-import { platform } from "node:os";
-import { basename, join, normalize, sep } from "node:path";
+import { basename, join, normalize } from "node:path";
 import {
   FIXTURE_METADATA_SYMBOL,
   FIXTURE_TYPE_LINK_SYMBOL,
