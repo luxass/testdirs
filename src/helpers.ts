@@ -172,7 +172,7 @@ export async function captureSnapshot(path: string): Promise<string> {
 
   for (const entry of entries) {
     const fullPath = normalize(join(entry.parentPath || "", entry.name));
-    const relativePath = fullPath.slice(basePathLength + 1);
+    const relativePath = normalize(fullPath.slice(basePathLength + 1));
 
     const lastSlashIndex = relativePath.lastIndexOf("/");
     const parentDir = lastSlashIndex === -1 ? "" : relativePath.slice(0, lastSlashIndex);
