@@ -1,4 +1,4 @@
-import { normalize } from "node:path";
+import { basename, normalize } from "node:path";
 import { describe, expect, it } from "vitest";
 import { FIXTURE_METADATA_SYMBOL, FIXTURE_TYPE_LINK_SYMBOL, FIXTURE_TYPE_SYMLINK_SYMBOL } from "../src/constants";
 import { captureSnapshot, hasMetadata, isLink, isPrimitive, isSymlink, link, metadata, symlink } from "../src/helpers";
@@ -228,7 +228,7 @@ describe("captureSnapshot", () => {
     await using dir = await testdir({});
 
     const result = await captureSnapshot(dir.path);
-    const dirName = normalize(dir.path).split("/").pop()!;
+    const dirName = basename(dir.path);
     expect(result).toBe(`${dirName}/`);
   });
 
@@ -238,7 +238,7 @@ describe("captureSnapshot", () => {
     });
 
     const result = await captureSnapshot(dir.path);
-    const dirName = normalize(dir.path).split("/").pop()!;
+    const dirName = basename(dir.path);
 
     expect(result).toBe([
       `${dirName}/`,
@@ -254,7 +254,7 @@ describe("captureSnapshot", () => {
     });
 
     const result = await captureSnapshot(dir.path);
-    const dirName = normalize(dir.path).split("/").pop()!;
+    const dirName = basename(dir.path);
 
     expect(result).toBe([
       `${dirName}/`,
@@ -273,7 +273,7 @@ describe("captureSnapshot", () => {
     });
 
     const result = await captureSnapshot(dir.path);
-    const dirName = normalize(dir.path).split("/").pop()!;
+    const dirName = basename(dir.path);
 
     expect(result).toBe([
       `${dirName}/`,
@@ -304,7 +304,7 @@ describe("captureSnapshot", () => {
     });
 
     const result = await captureSnapshot(dir.path);
-    const dirName = normalize(dir.path).split("/").pop()!;
+    const dirName = basename(dir.path);
 
     expect(result).toBe([
       `${dirName}/`,
@@ -334,7 +334,7 @@ describe("captureSnapshot", () => {
     });
 
     const result = await captureSnapshot(dir.path);
-    const dirName = normalize(dir.path).split("/").pop()!;
+    const dirName = basename(dir.path);
 
     expect(result).toBe([
       `${dirName}/`,
@@ -354,7 +354,7 @@ describe("captureSnapshot", () => {
     });
 
     const result = await captureSnapshot(dir.path);
-    const dirName = normalize(dir.path).split("/").pop()!;
+    const dirName = basename(dir.path);
 
     expect(result).toBe([
       `${dirName}/`,
@@ -377,7 +377,7 @@ describe("captureSnapshot", () => {
     });
 
     const result = await captureSnapshot(dir.path);
-    const dirName = normalize(dir.path).split("/").pop()!;
+    const dirName = basename(dir.path);
 
     expect(result).toBe([
       `${dirName}/`,
