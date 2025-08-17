@@ -164,13 +164,13 @@ export async function captureSnapshot(path: string): Promise<string> {
   const entries = await readdir(path, { recursive: true, withFileTypes: true });
 
   // pre calculate normalized base path
-  const normalizedBasePath = path.replace(/\/$/, "");
+  const normalizedBasePath = normalize(path.replace(/\/$/, ""));
   const basePathLength = normalizedBasePath.length;
 
   const tree = new Map<string, Array<{ name: string; isDir: boolean }>>();
 
   for (const entry of entries) {
-    const fullPath = join(entry.parentPath || "", entry.name);
+    const fullPath = normalize(join(entry.parentPath || "", entry.name));
     const relativePath = fullPath.slice(basePathLength + 1);
 
     const lastSlashIndex = relativePath.lastIndexOf("/");
