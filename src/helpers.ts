@@ -46,6 +46,7 @@ import type {
   TestdirSymlink,
 } from "./types";
 import { readdir } from "node:fs/promises";
+import { platform } from "node:os";
 import { basename, join, normalize } from "node:path";
 import {
   FIXTURE_METADATA_SYMBOL,
@@ -200,6 +201,11 @@ export async function captureSnapshot(path: string): Promise<string> {
   }
 
   const result: string[] = [`${basename(path)}/`];
+
+  // for debug only
+  if (platform() === "win32") {
+    console.error("MAP:", JSON.stringify(tree, null, 2));
+  }
 
   function renderTree(dirPath: string, prefix: string): void {
     const children = tree.get(dirPath);
