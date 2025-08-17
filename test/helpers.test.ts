@@ -1,7 +1,8 @@
 import { normalize } from "node:path";
 import { describe, expect, it } from "vitest";
 import { FIXTURE_METADATA_SYMBOL, FIXTURE_TYPE_LINK_SYMBOL, FIXTURE_TYPE_SYMLINK_SYMBOL } from "../src/constants";
-import { hasMetadata, isLink, isPrimitive, isSymlink, link, metadata, symlink } from "../src/helpers";
+import { captureSnapshot, hasMetadata, isLink, isPrimitive, isSymlink, link, metadata, symlink } from "../src/helpers";
+import { testdir } from "../src/index";
 
 describe("symlinks", () => {
   it("should create symlinks", () => {
@@ -219,5 +220,175 @@ describe("isPrimitive", () => {
   it("should not detect functions", () => {
     expect(isPrimitive(() => {})).toBe(false);
     expect(isPrimitive(() => {})).toBe(false);
+  });
+});
+
+describe("captureSnapshot", () => {
+  it("should capture empty directory", async () => {
+    await using dir = await testdir({});
+
+    const result = await captureSnapshot(dir.path);
+    const dirName = dir.path.split("/").pop()!;
+    expect(result).toBe(`${dirName}/`);
+  });
+
+  it("should capture directory with single file", async () => {
+    await using dir = await testdir({
+      "test.txt": "content",
+    });
+
+    const result = await captureSnapshot(dir.path);
+    const dirName = dir.path.split("/").pop()!;
+
+    expect(result).toBe([
+      `${dirName}/`,
+      "└── test.txt",
+    ].join("\n"));
+  });
+
+  it("should capture directory with multiple files", async () => {
+    await using dir = await testdir({
+      "a.txt": "content",
+      "b.txt": "content",
+      "c.txt": "content",
+    });
+
+    const result = await captureSnapshot(dir.path);
+    const dirName = dir.path.split("/").pop()!;
+
+    expect(result).toBe([
+      `${dirName}/`,
+      "├── a.txt",
+      "├── b.txt",
+      "└── c.txt",
+    ].join("\n"));
+  });
+
+  it("should capture nested directory structure", async () => {
+    await using dir = await testdir({
+      "file.txt": "content",
+      "subdir": {
+        "nested.txt": "content",
+      },
+    });
+
+    const result = await captureSnapshot(dir.path);
+    const dirName = dir.path.split("/").pop()!;
+
+    expect(result).toBe([
+      `${dirName}/`,
+      "├── subdir/",
+      "│   └── nested.txt",
+      "└── file.txt",
+    ].join("\n"));
+  });
+
+  it("should capture complex directory tree", async () => {
+    await using dir = await testdir({
+      "README.md": "content",
+      "cat": {
+        "cat.html": "content",
+        "cat.md": "content",
+        "cat.txt": "content",
+      },
+      "dog": {
+        "dog.html": "content",
+        "dog.md": "content",
+        "dog.txt": "content",
+        "elf": {
+          "elf.html": "content",
+          "elf.md": "content",
+          "elf.txt": "content",
+        },
+      },
+    });
+
+    const result = await captureSnapshot(dir.path);
+    const dirName = dir.path.split("/").pop()!;
+
+    expect(result).toBe([
+      `${dirName}/`,
+      "├── cat/",
+      "│   ├── cat.html",
+      "│   ├── cat.md",
+      "│   └── cat.txt",
+      "├── dog/",
+      "│   ├── elf/",
+      "│   │   ├── elf.html",
+      "│   │   ├── elf.md",
+      "│   │   └── elf.txt",
+      "│   ├── dog.html",
+      "│   ├── dog.md",
+      "│   └── dog.txt",
+      "└── README.md",
+    ].join("\n"));
+  });
+
+  it("should handle directories with mixed content", async () => {
+    await using dir = await testdir({
+      "empty-dir": {},
+      "file1.txt": "content",
+      "non-empty": {
+        "file2.txt": "content",
+      },
+    });
+
+    const result = await captureSnapshot(dir.path);
+    const dirName = dir.path.split("/").pop()!;
+
+    expect(result).toBe([
+      `${dirName}/`,
+      "├── empty-dir/",
+      "├── non-empty/",
+      "│   └── file2.txt",
+      "└── file1.txt",
+    ].join("\n"));
+  });
+
+  it("should sort files and directories alphabetically", async () => {
+    await using dir = await testdir({
+      "z-dir": {},
+      "a-dir": {},
+      "z-file.txt": "content",
+      "a-file.txt": "content",
+    });
+
+    const result = await captureSnapshot(dir.path);
+    const dirName = dir.path.split("/").pop()!;
+
+    expect(result).toBe([
+      `${dirName}/`,
+      "├── a-dir/",
+      "├── z-dir/",
+      "├── a-file.txt",
+      "└── z-file.txt",
+    ].join("\n"));
+  });
+
+  it("should handle deeply nested structures", async () => {
+    await using dir = await testdir({
+      level1: {
+        level2: {
+          level3: {
+            "deep.txt": "content",
+          },
+        },
+      },
+    });
+
+    const result = await captureSnapshot(dir.path);
+    const dirName = dir.path.split("/").pop()!;
+
+    expect(result).toBe([
+      `${dirName}/`,
+      "└── level1/",
+      "    └── level2/",
+      "        └── level3/",
+      "            └── deep.txt",
+    ].join("\n"));
+  });
+
+  it("should throw error for non-existent directory", async () => {
+    await expect(captureSnapshot("/non/existent/path")).rejects.toThrow();
   });
 });
