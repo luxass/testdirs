@@ -45,7 +45,8 @@ import type {
   TestdirMetadata,
   TestdirSymlink,
 } from "./types";
-import { normalize } from "node:path";
+import { readdir } from "node:fs/promises";
+import { basename, join, normalize } from "node:path";
 import {
   FIXTURE_METADATA_SYMBOL,
   FIXTURE_TYPE_LINK_SYMBOL,
@@ -152,4 +153,78 @@ export function isPrimitive(data: unknown): data is Exclude<DirectoryContent, Te
     || typeof data === "symbol"
     || data instanceof Uint8Array
   );
+}
+
+/**
+ * Capture a snapshot of a directory tree structure as a tree-view string
+ * @param {string} path The directory path to capture
+ * @returns {Promise<string>} Tree-view representation of the directory structure
+ */
+export async function captureSnapshot(path: string): Promise<string> {
+  const entries = await readdir(path, { recursive: true, withFileTypes: true });
+
+  // pre calculate normalized base path
+  const normalizedBasePath = normalize(path.replace(/[/\\]$/, ""));
+  const basePathLength = normalizedBasePath.length;
+
+  const tree = new Map<string, Array<{ name: string; isDir: boolean }>>();
+
+  for (const entry of entries) {
+    const fullPath = normalize(join(entry.parentPath || "", entry.name));
+    const relativePath = normalize(fullPath.slice(basePathLength + 1)).replace(/\\/g, "/");
+
+    const lastSlashIndex = relativePath.lastIndexOf("/");
+    const parentDir = lastSlashIndex === -1 ? "" : relativePath.slice(0, lastSlashIndex);
+
+    let children = tree.get(parentDir);
+    if (!children) {
+      children = [];
+      tree.set(parentDir, children);
+    }
+
+    children.push({
+      name: entry.name,
+      isDir: entry.isDirectory(),
+    });
+  }
+
+  // sort all children arrays by directory first, then files
+  for (const children of tree.values()) {
+    children.sort((a, b) => {
+      if (a.isDir !== b.isDir) {
+        return a.isDir ? -1 : 1;
+      }
+
+      return a.name.localeCompare(b.name);
+    });
+  }
+
+  const result: string[] = [`${basename(path)}/`];
+
+  function renderTree(dirPath: string, prefix: string): void {
+    const children = tree.get(dirPath);
+
+    // return early, if there isn't any children.
+    if (!children) return;
+
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      const isLast = i === children.length - 1;
+
+      const connector = isLast ? "└── " : "├── ";
+      const childName = child.isDir ? `${child.name}/` : child.name;
+
+      result.push(prefix + connector + childName);
+
+      if (child.isDir) {
+        const childPath = dirPath ? `${dirPath}/${child.name}` : child.name;
+        const newPrefix = prefix + (isLast ? "    " : "│   ");
+        renderTree(childPath, newPrefix);
+      }
+    }
+  }
+
+  renderTree("", "");
+
+  return result.join("\n");
 }
