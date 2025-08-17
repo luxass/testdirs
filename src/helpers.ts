@@ -164,7 +164,7 @@ export async function captureSnapshot(path: string): Promise<string> {
   const entries = await readdir(path, { recursive: true, withFileTypes: true });
 
   // pre calculate normalized base path
-  const normalizedBasePath = normalize(path.replace(/\/$/, ""));
+  const normalizedBasePath = normalize(path.replace(/[/\\]$/, ""));
   const basePathLength = normalizedBasePath.length;
 
   const tree = new Map<string, Array<{ name: string; isDir: boolean }>>();
