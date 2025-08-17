@@ -172,9 +172,9 @@ export async function captureSnapshot(path: string): Promise<string> {
 
   for (const entry of entries) {
     const fullPath = normalize(join(entry.parentPath || "", entry.name));
-    const relativePath = normalize(fullPath.slice(basePathLength + 1));
+    const relativePath = normalize(fullPath.slice(basePathLength + 1)).replace(/\\/g, "/");
 
-    const lastSlashIndex = relativePath.lastIndexOf(sep);
+    const lastSlashIndex = relativePath.lastIndexOf("/");
     const parentDir = lastSlashIndex === -1 ? "" : relativePath.slice(0, lastSlashIndex);
 
     let children = tree.get(parentDir);
@@ -201,11 +201,6 @@ export async function captureSnapshot(path: string): Promise<string> {
   }
 
   const result: string[] = [`${basename(path)}/`];
-
-  // for debug only
-  if (platform() === "win32") {
-    console.error("MAP:", Object.fromEntries(tree));
-  }
 
   function renderTree(dirPath: string, prefix: string): void {
     const children = tree.get(dirPath);
