@@ -3,6 +3,7 @@
   "version": "4.0.0",
   "exports": {
     ".": "./src/index.ts",
+    "./factory": "./src/factory.ts",
     "./helpers": "./src/helpers.ts"
   },
   "exclude": [
