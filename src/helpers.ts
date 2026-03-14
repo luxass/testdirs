@@ -155,6 +155,9 @@ export function isPrimitive(data: unknown): data is Exclude<DirectoryContent, Te
   );
 }
 
+const TRAILING_SLASH_RE = /[/\\]$/;
+const BACKSLASH_RE = /\\/g;
+
 /**
  * Capture a snapshot of a directory tree structure as a tree-view string
  * @param {string} path The directory path to capture
@@ -164,14 +167,14 @@ export async function captureSnapshot(path: string): Promise<string> {
   const entries = await readdir(path, { recursive: true, withFileTypes: true });
 
   // pre calculate normalized base path
-  const normalizedBasePath = normalize(path.replace(/[/\\]$/, ""));
+  const normalizedBasePath = normalize(path.replace(TRAILING_SLASH_RE, ""));
   const basePathLength = normalizedBasePath.length;
 
   const tree = new Map<string, Array<{ name: string; isDir: boolean }>>();
 
   for (const entry of entries) {
     const fullPath = normalize(join(entry.parentPath || "", entry.name));
-    const relativePath = normalize(fullPath.slice(basePathLength + 1)).replace(/\\/g, "/");
+    const relativePath = normalize(fullPath.slice(basePathLength + 1)).replace(BACKSLASH_RE, "/");
 
     const lastSlashIndex = relativePath.lastIndexOf("/");
     const parentDir = lastSlashIndex === -1 ? "" : relativePath.slice(0, lastSlashIndex);
