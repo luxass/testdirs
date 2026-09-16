@@ -3,7 +3,7 @@ import path, { resolve } from "node:path";
 
 import { FIXTURE_METADATA_SYMBOL, FIXTURE_ORIGINAL_PATH_SYMBOL } from "./constants";
 import { hasMetadata, isLink, isPrimitive, isSymlink, symlink } from "./helpers";
-import type { DirectoryJSON, FromFileSystemOptions } from "./types";
+import type { DirectoryJSON, FromFileSystemOptions, FSMetadata, TestdirSymlink } from "./types";
 
 export const DEFAULT_ENCODING_FOR_FILE_FN = () => "utf-8" as BufferEncoding;
 
@@ -82,6 +82,57 @@ export async function processDirectory(
  * @param {string} filePath - The path where the file tree should be created.
  * @param {DirectoryJSON} files - An object representing the directory structure and file contents of the tree.
  */
+async function createSymlinkEntry(
+  filename: string,
+  originalFileName: string,
+  data: TestdirSymlink,
+  files: DirectoryJSON,
+): Promise<void> {
+  if (files[FIXTURE_ORIGINAL_PATH_SYMBOL] != null) {
+    const original = path.resolve(path.normalize(files[FIXTURE_ORIGINAL_PATH_SYMBOL]));
+    data.path = path.relative(path.dirname(filename), path.join(original, originalFileName));
+  }
+
+  await fsAsync.symlink(
+    path.normalize(data.path),
+    filename,
+    (await isDirectory(path.resolve(path.dirname(filename), data.path))) ? "junction" : "file",
+  );
+}
+
+async function createDirEntry(
+  filename: string,
+  data: DirectoryJSON,
+  metadata: FSMetadata | undefined,
+): Promise<void> {
+  const mode = metadata?.mode;
+
+  await fsAsync.mkdir(filename, {
+    recursive: true,
+    ...(mode == null ? {} : { mode }),
+  });
+
+  await createFileTree(filename, data);
+}
+
+async function writePrimitiveEntry(
+  filename: string,
+  data: string | boolean | number | Uint8Array | null | undefined | bigint | symbol,
+  metadata: FSMetadata | undefined,
+): Promise<void> {
+  const dir = path.dirname(filename);
+
+  await fsAsync.mkdir(dir, {
+    recursive: true,
+  });
+
+  const content = typeof data === "string" || data instanceof Uint8Array ? data : String(data);
+
+  await fsAsync.writeFile(filename, content, {
+    ...metadata,
+  });
+}
+
 export async function createFileTree(filePath: string, files: DirectoryJSON): Promise<void> {
   for (let filename in files) {
     const originalFileName = filename;
@@ -98,46 +149,14 @@ export async function createFileTree(filePath: string, files: DirectoryJSON): Pr
     }
 
     if (isSymlink(data)) {
-      if (files[FIXTURE_ORIGINAL_PATH_SYMBOL] != null) {
-        const original = path.resolve(path.normalize(files[FIXTURE_ORIGINAL_PATH_SYMBOL]));
-        data.path = path.relative(path.dirname(filename), path.join(original, originalFileName));
-      }
-
-      await fsAsync.symlink(
-        path.normalize(data.path),
-        filename,
-        (await isDirectory(path.resolve(path.dirname(filename), data.path))) ? "junction" : "file",
-      );
+      await createSymlinkEntry(filename, originalFileName, data, files);
       continue;
     }
 
     if (isPrimitive(data) || data instanceof Uint8Array) {
-      const dir = path.dirname(filename);
-
-      await fsAsync.mkdir(dir, {
-        recursive: true,
-      });
-
-      if (
-        typeof data === "number" ||
-        typeof data === "boolean" ||
-        data == null ||
-        typeof data === "bigint" ||
-        typeof data === "symbol"
-      ) {
-        data = String(data);
-      }
-
-      await fsAsync.writeFile(filename, data, {
-        ...metadata,
-      });
+      await writePrimitiveEntry(filename, data, metadata);
     } else {
-      await fsAsync.mkdir(filename, {
-        recursive: true,
-        ...(metadata?.mode ? { mode: metadata.mode } : {}),
-      });
-
-      await createFileTree(filename, data as DirectoryJSON);
+      await createDirEntry(filename, data as DirectoryJSON, metadata);
     }
   }
 }

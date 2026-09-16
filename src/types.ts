@@ -172,7 +172,8 @@ export type TestdirInputOptions<T extends z.ZodType> = z.input<T>;
 
 export interface TestdirFactoryOptions<
   TOptionsSchema extends z.ZodType,
-  TExtensions extends Record<string, unknown>,
+  // oxlint-disable-next-line typescript/no-explicit-any
+  TExtensions extends Record<string, any>,
 > {
   /**
    * A hook that is called before the test directory is created.
@@ -201,6 +202,6 @@ export interface TestdirFn<TOptions, TResult> {
 export type ExtendedTestdirFn<
   TOptions,
   TResult,
-  // eslint-disable-next-line ts/no-empty-object-type
-  TExtensions extends Record<string, unknown> = {},
+  // oxlint-disable-next-line typescript/no-explicit-any typescript/ban-types
+  TExtensions extends Record<string, any> = {},
 > = TestdirFn<TOptions, TResult> & TExtensions;

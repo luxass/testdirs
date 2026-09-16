@@ -145,8 +145,9 @@ export const testdir = createCustomTestdir(
   },
   {
     async dirname(options) {
-      return options?.dirname
-        ? path.resolve(options.dirname)
+      const dirname = options?.dirname;
+      return dirname != null && dirname !== ""
+        ? path.resolve(dirname)
         : path.join(await fsAsync.realpath(tmpdir()), `testdirs-${randomUUID()}`);
     },
     optionsSchema: options,

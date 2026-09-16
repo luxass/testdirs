@@ -33,19 +33,31 @@ function parseOptions<TOptionsSchema extends z.ZodType>(
   }
 }
 
-export function createCustomTestdir<
-  TOptionsSchema extends z.ZodType,
-  TResult,
-  // eslint-disable-next-line ts/no-empty-object-type
-  TExtensions extends Record<string, unknown> = {},
->(
-  factoryFn: FactoryFn<TestdirInputOptions<TOptionsSchema>, TResult>,
-  opts: TestdirFactoryOptions<TOptionsSchema, TExtensions>,
-): ExtendedTestdirFn<TestdirInputOptions<TOptionsSchema>, TResult, TExtensions> {
+function attachExtensions(target: object, extensions: Record<string, unknown>): void {
+  for (const [key, value] of Object.entries(extensions)) {
+    (target as unknown as Record<string, unknown>)[key] = value;
+  }
+}
+
+function assertDirnameProvided<TOptionsSchema extends z.ZodType>(
+  opts: TestdirFactoryOptions<TOptionsSchema, Record<string, unknown>>,
+): void {
   // check if the factory has dirname provided
   if (!("dirname" in opts)) {
     throw new Error("A dirname function must be provided in factory options.");
   }
+}
+
+export function createCustomTestdir<
+  TOptionsSchema extends z.ZodType,
+  TResult,
+  // oxlint-disable-next-line typescript/no-explicit-any typescript/ban-types
+  TExtensions extends Record<string, any> = {},
+>(
+  factoryFn: FactoryFn<TestdirInputOptions<TOptionsSchema>, TResult>,
+  opts: TestdirFactoryOptions<TOptionsSchema, TExtensions>,
+): ExtendedTestdirFn<TestdirInputOptions<TOptionsSchema>, TResult, TExtensions> {
+  assertDirnameProvided(opts);
 
   const customTestdir: TestdirFn<TestdirInputOptions<TOptionsSchema>, TResult> = async (
     files?: DirectoryJSON,
@@ -75,11 +87,7 @@ export function createCustomTestdir<
   };
 
   if (opts.extensions) {
-    const extensions = opts.extensions;
-
-    for (const [key, value] of Object.entries(extensions)) {
-      (customTestdir as unknown as Record<string, unknown>)[key] = value;
-    }
+    attachExtensions(customTestdir, opts.extensions);
   }
 
   return customTestdir as ExtendedTestdirFn<

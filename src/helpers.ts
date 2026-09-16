@@ -37,6 +37,7 @@
  *
  */
 
+import type { Dirent } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { basename, join, normalize } from "node:path";
 
@@ -162,22 +163,19 @@ export function isPrimitive(
   );
 }
 
-const TRAILING_SLASH_RE = /[/\\]$/;
-const BACKSLASH_RE = /\\/g;
+const TRAILING_SLASH_RE = /[/\\]$/u;
+const BACKSLASH_RE = /\\/gu;
 
-/**
- * Capture a snapshot of a directory tree structure as a tree-view string
- * @param {string} path The directory path to capture
- * @returns {Promise<string>} Tree-view representation of the directory structure
- */
-export async function captureSnapshot(path: string): Promise<string> {
-  const entries = await readdir(path, { recursive: true, withFileTypes: true });
+interface SnapshotEntry {
+  name: string;
+  isDir: boolean;
+}
 
-  // pre calculate normalized base path
-  const normalizedBasePath = normalize(path.replace(TRAILING_SLASH_RE, ""));
-  const basePathLength = normalizedBasePath.length;
-
-  const tree = new Map<string, Array<{ name: string; isDir: boolean }>>();
+function buildSnapshotTree(
+  entries: Dirent[],
+  basePathLength: number,
+): Map<string, SnapshotEntry[]> {
+  const tree = new Map<string, SnapshotEntry[]>();
 
   for (const entry of entries) {
     const fullPath = normalize(join(entry.parentPath || "", entry.name));
@@ -197,6 +195,23 @@ export async function captureSnapshot(path: string): Promise<string> {
       isDir: entry.isDirectory(),
     });
   }
+
+  return tree;
+}
+
+/**
+ * Capture a snapshot of a directory tree structure as a tree-view string
+ * @param {string} path The directory path to capture
+ * @returns {Promise<string>} Tree-view representation of the directory structure
+ */
+export async function captureSnapshot(path: string): Promise<string> {
+  const entries = await readdir(path, { recursive: true, withFileTypes: true });
+
+  // pre calculate normalized base path
+  const normalizedBasePath = normalize(path.replace(TRAILING_SLASH_RE, ""));
+  const basePathLength = normalizedBasePath.length;
+
+  const tree = buildSnapshotTree(entries, basePathLength);
 
   // sort all children arrays by directory first, then files
   for (const children of tree.values()) {
