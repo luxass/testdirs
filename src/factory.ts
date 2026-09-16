@@ -26,7 +26,7 @@ function parseOptions<TOptionsSchema extends z.ZodType>(
       const issues = error.issues
         .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
         .join(", ");
-      throw new Error(`Options validation failed: ${issues}`);
+      throw new Error(`Options validation failed: ${issues}`, { cause: error });
     }
 
     throw error;
@@ -37,7 +37,7 @@ export function createCustomTestdir<
   TOptionsSchema extends z.ZodType,
   TResult,
   // eslint-disable-next-line ts/no-empty-object-type
-  TExtensions extends Record<string, any> = {},
+  TExtensions extends Record<string, unknown> = {},
 >(
   factoryFn: FactoryFn<TestdirInputOptions<TOptionsSchema>, TResult>,
   opts: TestdirFactoryOptions<TOptionsSchema, TExtensions>,
@@ -78,7 +78,7 @@ export function createCustomTestdir<
     const extensions = opts.extensions;
 
     for (const [key, value] of Object.entries(extensions)) {
-      (customTestdir as any)[key] = value;
+      (customTestdir as unknown as Record<string, unknown>)[key] = value;
     }
   }
 

@@ -5,13 +5,14 @@ import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import { z } from "zod";
 
 import { createCustomTestdir } from "../src/factory";
+import type { DirectoryJSON } from "../src/types";
 
 describe("createCustomTestdir", () => {
   it("should throw an error if dirname is not provided", async () => {
     expect(() =>
       createCustomTestdir(async () => {
         return {};
-      }, {} as any),
+      }, {} as never),
     ).toThrow("A dirname function must be provided in factory options.");
   });
 
@@ -44,7 +45,7 @@ describe("createCustomTestdir", () => {
 
     const tdPromise = testdir({}, {
       timeout: "invalid",
-    } as any);
+    } as never);
 
     await expect(tdPromise).rejects.toThrow("Options validation failed");
   });
@@ -283,8 +284,9 @@ describe("createCustomTestdir", () => {
         dirname: () => path.join(tmpdir(), "extension-test"),
         extensions: {
           hello: (name: string) => `Hello, ${name}!`,
-          withDebug: (files: any) => testdir(files, { debug: true }),
-          quick: () => testdir({}),
+          withDebug: (files: DirectoryJSON): Promise<{ result: { debug?: boolean | undefined } }> =>
+            testdir(files, { debug: true }),
+          quick: (): Promise<{ result: { debug?: boolean | undefined } }> => testdir({}),
         },
       });
 
@@ -294,13 +296,13 @@ describe("createCustomTestdir", () => {
 
       expectTypeOf(testdir.hello).toEqualTypeOf<(name: string) => string>();
       expectTypeOf(testdir.withDebug).toEqualTypeOf<
-        (files: any) => Promise<{
-          result: any;
+        (files: DirectoryJSON) => Promise<{
+          result: { debug?: boolean | undefined };
         }>
       >();
       expectTypeOf(testdir.quick).toEqualTypeOf<
         () => Promise<{
-          result: any;
+          result: { debug?: boolean | undefined };
         }>
       >();
 
@@ -339,9 +341,10 @@ describe("createCustomTestdir", () => {
         }),
         dirname: () => path.join(tmpdir(), "complex-extensions"),
         extensions: {
-          withEnv: (env: string, files: any = {}) => testdir(files, { env }),
+          withEnv: (env: string, files: DirectoryJSON = {}) => testdir(files, { env }),
           withPort: (port: number) => testdir({}, { port }),
-          withBoth: (env: string, port: number, files: any = {}) => testdir(files, { env, port }),
+          withBoth: (env: string, port: number, files: DirectoryJSON = {}) =>
+            testdir(files, { env, port }),
         },
       });
 
@@ -422,11 +425,11 @@ describe("createCustomTestdir", () => {
         }),
         dirname: () => path.join(tmpdir(), "validation-error-test"),
         extensions: {
-          withInvalidOptions: () => testdir({}, { port: "not-a-number" } as any),
+          withInvalidOptions: () => testdir({}, { port: "not-a-number" } as never),
           withMissingRequired: () =>
             testdir({}, {
               port: 3000,
-            } as any),
+            } as never),
         },
       });
 
