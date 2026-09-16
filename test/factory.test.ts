@@ -53,8 +53,12 @@ describe("createCustomTestdir", () => {
   describe("hook execution order", () => {
     it("should call hooks in the correct sequence: before → factory → after", async () => {
       const callOrder = vi.fn();
-      const beforeHook = vi.fn(() => callOrder("before"));
-      const afterHook = vi.fn(() => callOrder("after"));
+      const beforeHook = vi.fn(() => {
+        callOrder("before");
+      });
+      const afterHook = vi.fn(() => {
+        callOrder("after");
+      });
       const factoryFn = vi.fn(async () => {
         callOrder("factory");
         return { result: "success" };
@@ -80,7 +84,9 @@ describe("createCustomTestdir", () => {
     it("should call hooks with the same parsed options", async () => {
       const beforeHook = vi.fn();
       const afterHook = vi.fn();
-      const factoryFn = vi.fn(async ({ options }) => ({ receivedOptions: options }));
+      const factoryFn = vi.fn(async ({ options }: { options: { testValue?: string } }) => ({
+        receivedOptions: options,
+      }));
 
       const testdir = createCustomTestdir(factoryFn, {
         optionsSchema: z.object({ testValue: z.string().optional() }),
@@ -96,7 +102,7 @@ describe("createCustomTestdir", () => {
       expect(afterHook).toHaveBeenCalledWith(inputOptions);
       expect(factoryFn).toHaveBeenCalledWith({
         options: inputOptions,
-        fixturePath: expect.any(String),
+        fixturePath: expect.any(String) as string,
         files: {},
       });
     });
@@ -105,12 +111,16 @@ describe("createCustomTestdir", () => {
       const executionOrder: string[] = [];
 
       const beforeHook = vi.fn(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 10);
+        });
         executionOrder.push("before-completed");
       });
 
       const afterHook = vi.fn(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 5));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 5);
+        });
         executionOrder.push("after-completed");
       });
 
@@ -150,7 +160,9 @@ describe("createCustomTestdir", () => {
   });
 
   it("should pass files to factory function", async () => {
-    const factoryFn = vi.fn(async ({ files }) => ({ receivedFiles: files }));
+    const factoryFn = vi.fn(async ({ files }: { files: DirectoryJSON }) => ({
+      receivedFiles: files,
+    }));
     const testFiles = {
       "test.txt": "hello world",
       "nested/file.js": "console.log('test');",
@@ -168,13 +180,15 @@ describe("createCustomTestdir", () => {
     expect(factoryFn).toHaveBeenCalledWith({
       files: testFiles,
       options: {},
-      fixturePath: expect.any(String),
+      fixturePath: expect.any(String) as string,
     });
   });
 
   it("should provide correct fixture path to factory", async () => {
     const expectedPath = path.join(tmpdir(), "custom-fixture-path");
-    const factoryFn = vi.fn(async ({ fixturePath }) => ({ path: fixturePath }));
+    const factoryFn = vi.fn(async ({ fixturePath }: { fixturePath: string }) => ({
+      path: fixturePath,
+    }));
 
     const testdir = createCustomTestdir(factoryFn, {
       optionsSchema: z.object({}),
@@ -192,7 +206,7 @@ describe("createCustomTestdir", () => {
   });
 
   it("should provide complete context object to factory", async () => {
-    const factoryFn = vi.fn(async (context) => ({ context }));
+    const factoryFn = vi.fn(async (context: { files: DirectoryJSON }) => ({ context }));
     const testFiles = { "app.js": "console.log('app');" };
     const testOptions = { debug: true, timeout: 3000 };
     const expectedPath = path.join(tmpdir(), "context-test");
@@ -220,7 +234,7 @@ describe("createCustomTestdir", () => {
   });
 
   it("should handle empty files object", async () => {
-    const factoryFn = vi.fn(async ({ files }) => ({
+    const factoryFn = vi.fn(async ({ files }: { files: DirectoryJSON }) => ({
       isEmpty: Object.keys(files).length === 0,
       files,
     }));
@@ -237,7 +251,7 @@ describe("createCustomTestdir", () => {
   });
 
   it("should handle nested file structures", async () => {
-    const factoryFn = vi.fn(async ({ files }) => ({ files }));
+    const factoryFn = vi.fn(async ({ files }: { files: DirectoryJSON }) => ({ files }));
     const nestedFiles = {
       "src/index.js": "export default 'main';",
       "src/utils/helper.js": "export const help = () => {};",
@@ -258,9 +272,13 @@ describe("createCustomTestdir", () => {
   });
 
   it("should work with async dirname function", async () => {
-    const factoryFn = vi.fn(async ({ fixturePath }) => ({ path: fixturePath }));
+    const factoryFn = vi.fn(async ({ fixturePath }: { fixturePath: string }) => ({
+      path: fixturePath,
+    }));
     const asyncDirname = vi.fn(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 5));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 5);
+      });
       return path.join(tmpdir(), "async-dirname");
     });
 
@@ -277,7 +295,9 @@ describe("createCustomTestdir", () => {
 
   describe("extension system", () => {
     it("should create extensions and make them available on testdir", async () => {
-      const factoryFn = vi.fn(async ({ options }) => ({ result: options }));
+      const factoryFn = vi.fn(async ({ options }: { options: { debug?: boolean } }) => ({
+        result: options,
+      }));
 
       const testdir = createCustomTestdir(factoryFn, {
         optionsSchema: z.object({ debug: z.boolean().optional() }),
@@ -332,7 +352,15 @@ describe("createCustomTestdir", () => {
     });
 
     it("should handle complex extensions with multiple parameters", async () => {
-      const factoryFn = vi.fn(async ({ options, files }) => ({ options, files }));
+      const factoryFn = vi.fn(
+        async ({
+          options,
+          files,
+        }: {
+          options: { env?: string; port?: number };
+          files: DirectoryJSON;
+        }) => ({ options, files }),
+      );
 
       const testdir = createCustomTestdir(factoryFn, {
         optionsSchema: z.object({
@@ -361,14 +389,19 @@ describe("createCustomTestdir", () => {
     });
 
     it("should allow extensions to access parsed options from factory", async () => {
-      const factoryFn = vi.fn(async ({ options }) => ({ receivedOptions: options }));
+      const factoryFn = vi.fn(
+        async ({ options }: { options: { baseUrl?: string | undefined } }) => ({
+          receivedOptions: options,
+        }),
+      );
 
       const testdir = createCustomTestdir(factoryFn, {
         optionsSchema: z.object({ baseUrl: z.string().default("http://localhost") }),
         dirname: () => path.join(tmpdir(), "options-access"),
         extensions: {
           apiCall: (_endpoint: string) => testdir({}, { baseUrl: "https://api.example.com" }),
-          localCall: (_endpoint: string) => testdir({}), // Uses default baseUrl
+          // Uses default baseUrl
+          localCall: (_endpoint: string) => testdir({}),
         },
       });
 
@@ -416,7 +449,9 @@ describe("createCustomTestdir", () => {
     });
 
     it("should handle validation errors in extensions", async () => {
-      const factoryFn = vi.fn(async ({ options }) => ({ options }));
+      const factoryFn = vi.fn(
+        async ({ options }: { options: { required: string; port: number } }) => ({ options }),
+      );
 
       const testdir = createCustomTestdir(factoryFn, {
         optionsSchema: z.object({
