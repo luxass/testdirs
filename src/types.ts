@@ -4,10 +4,8 @@
  */
 
 import type { z } from "zod";
-import type {
-  FIXTURE_TYPE_LINK_SYMBOL,
-  FIXTURE_TYPE_SYMLINK_SYMBOL,
-} from "./constants";
+
+import type { FIXTURE_TYPE_LINK_SYMBOL, FIXTURE_TYPE_SYMLINK_SYMBOL } from "./constants";
 
 /**
  * A function type that determines the encoding for a given file path.
@@ -19,18 +17,18 @@ export type EncodingForFileFn = (path: string) => BufferEncoding | null;
 /**
  * Represents the possible content types that can be stored in a test directory.
  */
-export type DirectoryContent
-  = | string
-    | boolean
-    | number
-    | Uint8Array
-    | null
-    | undefined
-    | bigint
-    | symbol
-    | TestdirSymlink
-    | TestdirLink
-    | TestdirMetadata;
+export type DirectoryContent =
+  | string
+  | boolean
+  | number
+  | Uint8Array
+  | null
+  | undefined
+  | bigint
+  | symbol
+  | TestdirSymlink
+  | TestdirLink
+  | TestdirMetadata;
 
 /**
  * Represents metadata for a file system entry.

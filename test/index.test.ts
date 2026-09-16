@@ -1,7 +1,9 @@
 import fsAsync from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+
 import { describe, expect, it } from "vitest";
+
 import { testdir } from "../src";
 import { link, symlink } from "../src/helpers";
 
@@ -21,7 +23,7 @@ describe("create testdirs", () => {
     const files = {
       "file1.txt": "content1",
       "file2.txt": "content2",
-      "subdir": {
+      subdir: {
         "file3.txt": "content3",
       },
     };
@@ -121,7 +123,7 @@ describe("create testdirs", () => {
     const files = {
       "file1.txt": "content1",
       "file2.txt": "content2",
-      "subdir": {
+      subdir: {
         "file3.txt": "content3",
         "file4.txt": link("../file1.txt"),
         "file5.txt": symlink("../file2.txt"),
@@ -133,13 +135,7 @@ describe("create testdirs", () => {
     const dir = await testdir(files);
 
     expect(await fsAsync.readdir(dir.path)).toEqual(
-      expect.arrayContaining([
-        "file1.txt",
-        "file2.txt",
-        "link4.txt",
-        "link5.txt",
-        "subdir",
-      ]),
+      expect.arrayContaining(["file1.txt", "file2.txt", "link4.txt", "link5.txt", "subdir"]),
     );
 
     expect(await fsAsync.readdir(path.join(dir.path, "subdir"))).toEqual([
@@ -167,9 +163,9 @@ describe("create testdirs", () => {
     expect(
       await fsAsync.readlink(path.join(dir.path, "subdir", "file5.txt"), "utf8"),
     ).toBeDefined();
-    expect(
-      (await fsAsync.lstat(path.join(dir.path, "subdir", "file5.txt"))).isSymbolicLink(),
-    ).toBe(true);
+    expect((await fsAsync.lstat(path.join(dir.path, "subdir", "file5.txt"))).isSymbolicLink()).toBe(
+      true,
+    );
 
     // removing directory
     await dir.remove();
@@ -184,7 +180,9 @@ describe("create testdirs", () => {
       expect.arrayContaining(["file.txt", "README.md", "nested"]),
     );
 
-    expect(await fsAsync.readdir(path.join(dir.path, "nested"))).toEqual(expect.arrayContaining(["README.md", "image.txt"]));
+    expect(await fsAsync.readdir(path.join(dir.path, "nested"))).toEqual(
+      expect.arrayContaining(["README.md", "image.txt"]),
+    );
 
     // removing directory
     await dir.remove();

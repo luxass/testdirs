@@ -1,17 +1,9 @@
-import type { DirectoryJSON, FromFileSystemOptions } from "./types";
 import fsAsync from "node:fs/promises";
 import path, { resolve } from "node:path";
-import {
-  FIXTURE_METADATA_SYMBOL,
-  FIXTURE_ORIGINAL_PATH_SYMBOL,
-} from "./constants";
-import {
-  hasMetadata,
-  isLink,
-  isPrimitive,
-  isSymlink,
-  symlink,
-} from "./helpers";
+
+import { FIXTURE_METADATA_SYMBOL, FIXTURE_ORIGINAL_PATH_SYMBOL } from "./constants";
+import { hasMetadata, isLink, isPrimitive, isSymlink, symlink } from "./helpers";
+import type { DirectoryJSON, FromFileSystemOptions } from "./types";
 
 export const DEFAULT_ENCODING_FOR_FILE_FN = () => "utf-8" as BufferEncoding;
 
@@ -90,10 +82,7 @@ export async function processDirectory(
  * @param {string} filePath - The path where the file tree should be created.
  * @param {DirectoryJSON} files - An object representing the directory structure and file contents of the tree.
  */
-export async function createFileTree(
-  filePath: string,
-  files: DirectoryJSON,
-): Promise<void> {
+export async function createFileTree(filePath: string, files: DirectoryJSON): Promise<void> {
   for (let filename in files) {
     const originalFileName = filename;
     let data = files[filename];
@@ -117,9 +106,7 @@ export async function createFileTree(
       await fsAsync.symlink(
         path.normalize(data.path),
         filename,
-        await isDirectory(path.resolve(path.dirname(filename), data.path))
-          ? "junction"
-          : "file",
+        (await isDirectory(path.resolve(path.dirname(filename), data.path))) ? "junction" : "file",
       );
       continue;
     }
@@ -132,11 +119,11 @@ export async function createFileTree(
       });
 
       if (
-        typeof data === "number"
-        || typeof data === "boolean"
-        || data == null
-        || typeof data === "bigint"
-        || typeof data === "symbol"
+        typeof data === "number" ||
+        typeof data === "boolean" ||
+        data == null ||
+        typeof data === "bigint" ||
+        typeof data === "symbol"
       ) {
         data = String(data);
       }
@@ -176,7 +163,7 @@ export async function fromFileSystem(
   path: string,
   options?: FromFileSystemOptions,
 ): Promise<DirectoryJSON> {
-  if (!await isDirectory(path)) {
+  if (!(await isDirectory(path))) {
     return {};
   }
 

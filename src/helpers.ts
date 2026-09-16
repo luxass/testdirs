@@ -37,6 +37,14 @@
  *
  */
 
+import { readdir } from "node:fs/promises";
+import { basename, join, normalize } from "node:path";
+
+import {
+  FIXTURE_METADATA_SYMBOL,
+  FIXTURE_TYPE_LINK_SYMBOL,
+  FIXTURE_TYPE_SYMLINK_SYMBOL,
+} from "./constants";
 import type {
   DirectoryContent,
   DirectoryJSON,
@@ -45,13 +53,6 @@ import type {
   TestdirMetadata,
   TestdirSymlink,
 } from "./types";
-import { readdir } from "node:fs/promises";
-import { basename, join, normalize } from "node:path";
-import {
-  FIXTURE_METADATA_SYMBOL,
-  FIXTURE_TYPE_LINK_SYMBOL,
-  FIXTURE_TYPE_SYMLINK_SYMBOL,
-} from "./constants";
 
 /**
  * Create a symlink to a file or directory
@@ -72,10 +73,9 @@ export function symlink(path: string): TestdirSymlink {
  */
 export function isSymlink(value: unknown): value is TestdirSymlink {
   return (
-    typeof value === "object"
-    && value !== null
-    && (value as TestdirSymlink)[FIXTURE_TYPE_SYMLINK_SYMBOL]
-    === FIXTURE_TYPE_SYMLINK_SYMBOL
+    typeof value === "object" &&
+    value !== null &&
+    (value as TestdirSymlink)[FIXTURE_TYPE_SYMLINK_SYMBOL] === FIXTURE_TYPE_SYMLINK_SYMBOL
   );
 }
 
@@ -98,10 +98,9 @@ export function link(path: string): TestdirLink {
  */
 export function isLink(value: unknown): value is TestdirLink {
   return (
-    typeof value === "object"
-    && value !== null
-    && (value as TestdirLink)[FIXTURE_TYPE_LINK_SYMBOL]
-    === FIXTURE_TYPE_LINK_SYMBOL
+    typeof value === "object" &&
+    value !== null &&
+    (value as TestdirLink)[FIXTURE_TYPE_LINK_SYMBOL] === FIXTURE_TYPE_LINK_SYMBOL
   );
 }
 
@@ -116,7 +115,10 @@ export function isLink(value: unknown): value is TestdirLink {
  * due to how permissions work on windows and `libuv` doesn't support windows acl's.
  * setting a directory to readonly on windows doesn't actually work, and will still be writable.
  */
-export function metadata(content: DirectoryContent | DirectoryJSON, metadata: FSMetadata): TestdirMetadata {
+export function metadata(
+  content: DirectoryContent | DirectoryJSON,
+  metadata: FSMetadata,
+): TestdirMetadata {
   return {
     [FIXTURE_METADATA_SYMBOL]: metadata,
     content,
@@ -130,9 +132,9 @@ export function metadata(content: DirectoryContent | DirectoryJSON, metadata: FS
  */
 export function hasMetadata(value: unknown): value is TestdirMetadata {
   return (
-    typeof value === "object"
-    && value !== null
-    && (value as TestdirMetadata)[FIXTURE_METADATA_SYMBOL] != null
+    typeof value === "object" &&
+    value !== null &&
+    (value as TestdirMetadata)[FIXTURE_METADATA_SYMBOL] != null
   );
 }
 
@@ -142,16 +144,21 @@ export function hasMetadata(value: unknown): value is TestdirMetadata {
  * @param {unknown} data - The data to be checked.
  * @returns {data is Exclude<DirectoryContent, TestdirSymlink | TestdirLink | DirectoryJSON | TestdirMetadata>} `true` if the data is a primitive value, `false` otherwise.
  */
-export function isPrimitive(data: unknown): data is Exclude<DirectoryContent, TestdirSymlink | TestdirLink | DirectoryJSON | TestdirMetadata> {
+export function isPrimitive(
+  data: unknown,
+): data is Exclude<
+  DirectoryContent,
+  TestdirSymlink | TestdirLink | DirectoryJSON | TestdirMetadata
+> {
   return (
-    typeof data === "string"
-    || typeof data === "number"
-    || typeof data === "boolean"
-    || data === null
-    || data === undefined
-    || typeof data === "bigint"
-    || typeof data === "symbol"
-    || data instanceof Uint8Array
+    typeof data === "string" ||
+    typeof data === "number" ||
+    typeof data === "boolean" ||
+    data === null ||
+    data === undefined ||
+    typeof data === "bigint" ||
+    typeof data === "symbol" ||
+    data instanceof Uint8Array
   );
 }
 

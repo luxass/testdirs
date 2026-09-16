@@ -87,13 +87,15 @@
  * ```
  */
 
-import type { FromFileSystemOptions } from "./types";
 import { randomUUID } from "node:crypto";
 import fsAsync from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+
 import { z } from "zod";
+
 import { createCustomTestdir } from "./factory";
+import type { FromFileSystemOptions } from "./types";
 import { createFileTree, fromFileSystem } from "./utils";
 
 export {
@@ -117,44 +119,50 @@ const options = z.object({
 
 export type TestdirOptions = z.infer<typeof options>;
 
-export const testdir = createCustomTestdir(async ({ fixturePath, files }) => {
-  await fsAsync.mkdir(fixturePath, {
-    recursive: true,
-  });
+export const testdir = createCustomTestdir(
+  async ({ fixturePath, files }) => {
+    await fsAsync.mkdir(fixturePath, {
+      recursive: true,
+    });
 
-  await createFileTree(fixturePath, files);
+    await createFileTree(fixturePath, files);
 
-  return {
-    path: fixturePath,
-    remove: async () => {
-      await fsAsync.rm(fixturePath, {
-        recursive: true,
-        force: true,
-      });
-    },
-    [Symbol.asyncDispose]: async () => {
-      await fsAsync.rm(fixturePath, {
-        recursive: true,
-        force: true,
-      });
-    },
-  };
-}, {
-  async dirname(options) {
-    return options?.dirname
-      ? path.resolve(options.dirname)
-      : path.join(await fsAsync.realpath(tmpdir()), `testdirs-${randomUUID()}`);
+    return {
+      path: fixturePath,
+      remove: async () => {
+        await fsAsync.rm(fixturePath, {
+          recursive: true,
+          force: true,
+        });
+      },
+      [Symbol.asyncDispose]: async () => {
+        await fsAsync.rm(fixturePath, {
+          recursive: true,
+          force: true,
+        });
+      },
+    };
   },
-  optionsSchema: options,
-  extensions: {
-    from: async (fsPath: string, options?: TestdirOptions & {
-      fromFS?: FromFileSystemOptions;
-    }) => {
-      const files = await fromFileSystem(fsPath, options?.fromFS);
-      return testdir(files, options);
+  {
+    async dirname(options) {
+      return options?.dirname
+        ? path.resolve(options.dirname)
+        : path.join(await fsAsync.realpath(tmpdir()), `testdirs-${randomUUID()}`);
+    },
+    optionsSchema: options,
+    extensions: {
+      from: async (
+        fsPath: string,
+        options?: TestdirOptions & {
+          fromFS?: FromFileSystemOptions;
+        },
+      ) => {
+        const files = await fromFileSystem(fsPath, options?.fromFS);
+        return testdir(files, options);
+      },
     },
   },
-});
+);
 
 export type {
   CustomHookFn,

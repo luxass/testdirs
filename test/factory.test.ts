@@ -1,14 +1,18 @@
 import { tmpdir } from "node:os";
 import path from "node:path";
+
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import { z } from "zod";
+
 import { createCustomTestdir } from "../src/factory";
 
 describe("createCustomTestdir", () => {
   it("should throw an error if dirname is not provided", async () => {
-    expect(() => createCustomTestdir(async () => {
-      return {};
-    }, {} as any)).toThrow("A dirname function must be provided in factory options.");
+    expect(() =>
+      createCustomTestdir(async () => {
+        return {};
+      }, {} as any),
+    ).toThrow("A dirname function must be provided in factory options.");
   });
 
   it("should validate options with custom schema", async () => {
@@ -17,13 +21,10 @@ describe("createCustomTestdir", () => {
       debug: z.boolean().optional(),
     });
 
-    const testdir = createCustomTestdir(
-      async ({ options }) => ({ options }),
-      {
-        optionsSchema: schema,
-        dirname: () => path.join(tmpdir(), "test-schema"),
-      },
-    );
+    const testdir = createCustomTestdir(async ({ options }) => ({ options }), {
+      optionsSchema: schema,
+      dirname: () => path.join(tmpdir(), "test-schema"),
+    });
 
     const result = await testdir({}, { timeout: 5000, debug: true });
     expect(result.options.timeout).toBe(5000);
@@ -36,20 +37,16 @@ describe("createCustomTestdir", () => {
       required: z.string(),
     });
 
-    const testdir = createCustomTestdir(
-      async ({ options }) => ({ options }),
-      {
-        optionsSchema: schema,
-        dirname: () => path.join(tmpdir(), "test-invalid"),
-      },
-    );
+    const testdir = createCustomTestdir(async ({ options }) => ({ options }), {
+      optionsSchema: schema,
+      dirname: () => path.join(tmpdir(), "test-invalid"),
+    });
 
     const tdPromise = testdir({}, {
       timeout: "invalid",
     } as any);
 
-    await expect(tdPromise)
-      .rejects.toThrow("Options validation failed");
+    await expect(tdPromise).rejects.toThrow("Options validation failed");
   });
 
   describe("hook execution order", () => {
@@ -121,26 +118,19 @@ describe("createCustomTestdir", () => {
         return { success: true };
       });
 
-      const testdir = createCustomTestdir(
-        factoryFn,
-        {
-          optionsSchema: z.object({}),
-          before: beforeHook,
-          after: afterHook,
-          dirname: () => path.join(tmpdir(), "test-async"),
-        },
-      );
+      const testdir = createCustomTestdir(factoryFn, {
+        optionsSchema: z.object({}),
+        before: beforeHook,
+        after: afterHook,
+        dirname: () => path.join(tmpdir(), "test-async"),
+      });
 
       await testdir({});
 
       expect(beforeHook).toHaveBeenCalledOnce();
       expect(afterHook).toHaveBeenCalledOnce();
       expect(factoryFn).toHaveBeenCalledOnce();
-      expect(executionOrder).toEqual([
-        "before-completed",
-        "factory-executed",
-        "after-completed",
-      ]);
+      expect(executionOrder).toEqual(["before-completed", "factory-executed", "after-completed"]);
     });
 
     it("should work without hooks", async () => {
@@ -163,7 +153,7 @@ describe("createCustomTestdir", () => {
     const testFiles = {
       "test.txt": "hello world",
       "nested/file.js": "console.log('test');",
-      "data.json": "{\"key\": \"value\"}",
+      "data.json": '{"key": "value"}',
     };
 
     const testdir = createCustomTestdir(factoryFn, {
@@ -251,7 +241,7 @@ describe("createCustomTestdir", () => {
       "src/index.js": "export default 'main';",
       "src/utils/helper.js": "export const help = () => {};",
       "tests/unit/app.test.js": "test('app', () => {});",
-      "package.json": "{\"name\": \"test-app\"}",
+      "package.json": '{"name": "test-app"}',
       "README.md": "# Test App",
     };
 
@@ -303,12 +293,16 @@ describe("createCustomTestdir", () => {
       expect(typeof testdir.quick).toBe("function");
 
       expectTypeOf(testdir.hello).toEqualTypeOf<(name: string) => string>();
-      expectTypeOf(testdir.withDebug).toEqualTypeOf<(files: any) => Promise<{
-        result: any;
-      }>>();
-      expectTypeOf(testdir.quick).toEqualTypeOf<() => Promise<{
-        result: any;
-      }>>();
+      expectTypeOf(testdir.withDebug).toEqualTypeOf<
+        (files: any) => Promise<{
+          result: any;
+        }>
+      >();
+      expectTypeOf(testdir.quick).toEqualTypeOf<
+        () => Promise<{
+          result: any;
+        }>
+      >();
 
       expect(testdir.hello("World")).toBe("Hello, World!");
 
@@ -347,8 +341,7 @@ describe("createCustomTestdir", () => {
         extensions: {
           withEnv: (env: string, files: any = {}) => testdir(files, { env }),
           withPort: (port: number) => testdir({}, { port }),
-          withBoth: (env: string, port: number, files: any = {}) =>
-            testdir(files, { env, port }),
+          withBoth: (env: string, port: number, files: any = {}) => testdir(files, { env, port }),
         },
       });
 
@@ -430,9 +423,10 @@ describe("createCustomTestdir", () => {
         dirname: () => path.join(tmpdir(), "validation-error-test"),
         extensions: {
           withInvalidOptions: () => testdir({}, { port: "not-a-number" } as any),
-          withMissingRequired: () => testdir({}, {
-            port: 3000,
-          } as any),
+          withMissingRequired: () =>
+            testdir({}, {
+              port: 3000,
+            } as any),
         },
       });
 

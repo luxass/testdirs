@@ -1,7 +1,9 @@
 import fsAsync from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+
 import { describe, expect, it, onTestFinished } from "vitest";
+
 import { testdir } from "../src";
 import { link, metadata, symlink } from "../src/helpers";
 import { createFileTree, fromFileSystem } from "../src/utils";
@@ -29,9 +31,9 @@ describe("create file trees", () => {
     const files = {
       "file1.txt": "Hello, world!",
       "this/is/nested.txt": "This is a file",
-      "dir1": {
+      dir1: {
         "file2.txt": "This is file 2",
-        "dir2": {
+        dir2: {
           "file3.txt": "This is file 3",
         },
       },
@@ -71,16 +73,7 @@ describe("create file trees", () => {
       "file3.txt": true,
       "file4.txt": null,
       "file5.txt": undefined,
-      "file6.txt": new Uint8Array([
-        116,
-        101,
-        115,
-        116,
-        100,
-        105,
-        114,
-        115,
-      ]),
+      "file6.txt": new Uint8Array([116, 101, 115, 116, 100, 105, 114, 115]),
     };
 
     await createFileTree(dirPath, files);
@@ -101,10 +94,10 @@ describe("create file trees", () => {
 
     const files = {
       "file1.txt": "Hello, world!",
-      "dir1": {
+      dir1: {
         "file2.txt": "This is file 2",
         "text.txt": "This is a text file",
-        "dir2": {
+        dir2: {
           "file3.txt": "This is file 3",
         },
       },
@@ -132,49 +125,55 @@ describe("create file trees", () => {
     expect(link2Content).toBe("This is file 2");
   });
 
-  it.runIf(os.platform() !== "win32")("should be able to create files with different permissions", async () => {
-    const dirPath = "./.testdirs/with-permissions";
-    cleanup(dirPath);
+  it.runIf(os.platform() !== "win32")(
+    "should be able to create files with different permissions",
+    async () => {
+      const dirPath = "./.testdirs/with-permissions";
+      cleanup(dirPath);
 
-    const files = {
-      "file1.txt": metadata("Hello, world!", { mode: 0o644 }),
-      "dir1": {
-        "file2.txt": metadata("This is file 2", { mode: 0o444 }),
-        "dir2": metadata({
-          "file3.txt": "This is file 3",
-        }, { mode: 0o555 }),
-      },
-    };
+      const files = {
+        "file1.txt": metadata("Hello, world!", { mode: 0o644 }),
+        dir1: {
+          "file2.txt": metadata("This is file 2", { mode: 0o444 }),
+          dir2: metadata(
+            {
+              "file3.txt": "This is file 3",
+            },
+            { mode: 0o555 },
+          ),
+        },
+      };
 
-    await expect(createFileTree(dirPath, files)).rejects.toThrowError("EACCES: permission denied");
+      await expect(createFileTree(dirPath, files)).rejects.toThrowError(
+        "EACCES: permission denied",
+      );
 
-    const file1Content = await fsAsync.readFile(path.resolve(dirPath, "file1.txt"), "utf-8");
-    expect(file1Content).toBe("Hello, world!");
+      const file1Content = await fsAsync.readFile(path.resolve(dirPath, "file1.txt"), "utf-8");
+      expect(file1Content).toBe("Hello, world!");
 
-    const file1Stats = await fsAsync.stat(path.resolve(dirPath, "file1.txt"));
-    expect((file1Stats.mode & 0o644).toString(8)).toBe("644");
+      const file1Stats = await fsAsync.stat(path.resolve(dirPath, "file1.txt"));
+      expect((file1Stats.mode & 0o644).toString(8)).toBe("644");
 
-    const file2Content = await fsAsync.readFile(
-      path.resolve(dirPath, "dir1/file2.txt"),
-      "utf-8",
-    );
-    expect(file2Content).toBe("This is file 2");
+      const file2Content = await fsAsync.readFile(path.resolve(dirPath, "dir1/file2.txt"), "utf-8");
+      expect(file2Content).toBe("This is file 2");
 
-    const file2Stats = await fsAsync.stat(path.resolve(dirPath, "dir1/file2.txt"));
-    expect((file2Stats.mode & 0o444).toString(8)).toBe("444");
+      const file2Stats = await fsAsync.stat(path.resolve(dirPath, "dir1/file2.txt"));
+      expect((file2Stats.mode & 0o444).toString(8)).toBe("444");
 
-    const dir2Stats = await fsAsync.stat(path.resolve(dirPath, "dir1/dir2"));
-    expect((dir2Stats.mode & 0o555).toString(8)).toBe("555");
+      const dir2Stats = await fsAsync.stat(path.resolve(dirPath, "dir1/dir2"));
+      expect((dir2Stats.mode & 0o555).toString(8)).toBe("555");
 
-    // because the dir has a non writable permission, it should throw an error
-    // because we can't create the file inside the dir
-    await expect(fsAsync.readFile(
-      path.resolve(dirPath, "dir1/dir2/file3.txt"),
-      "utf-8",
-    )).rejects.toThrowError("ENOENT: no such file or directory");
+      // because the dir has a non writable permission, it should throw an error
+      // because we can't create the file inside the dir
+      await expect(
+        fsAsync.readFile(path.resolve(dirPath, "dir1/dir2/file3.txt"), "utf-8"),
+      ).rejects.toThrowError("ENOENT: no such file or directory");
 
-    await expect(fsAsync.writeFile(path.resolve(dirPath, "dir1/dir2/file3.txt"), "Hello, world!")).rejects.toThrowError("EACCES: permission denied");
-  });
+      await expect(
+        fsAsync.writeFile(path.resolve(dirPath, "dir1/dir2/file3.txt"), "Hello, world!"),
+      ).rejects.toThrowError("EACCES: permission denied");
+    },
+  );
 });
 
 describe("map fs to objects", () => {
@@ -198,7 +197,7 @@ describe("map fs to objects", () => {
         "file1.txt": "content1\n",
         "symlink.txt": symlink("file1.txt"),
         "symlinked-dir": symlink("nested"),
-        "nested": {
+        nested: {
           "file2.txt": "content2\n",
           "link-to-parent.txt": symlink("../file1.txt"),
           "double-nested": {
@@ -222,7 +221,10 @@ describe("map fs to objects", () => {
       const dir = await testdir(files);
 
       const rootReadme = await fsAsync.readFile("./README.md", "utf8");
-      const testdirReadme = await fsAsync.readFile(`${dir.path}/nested/double-nested/double-double-nested/README.md`, "utf8");
+      const testdirReadme = await fsAsync.readFile(
+        `${dir.path}/nested/double-nested/double-double-nested/README.md`,
+        "utf8",
+      );
 
       expect(rootReadme).toStrictEqual(testdirReadme);
 
@@ -239,7 +241,10 @@ describe("map fs to objects", () => {
       });
 
       const rootReadme = await fsAsync.readFile("./README.md", "utf8");
-      const testdirReadme = await fsAsync.readFile(`${dir.path}/nested/double-nested/double-double-nested/README.md`, "utf8");
+      const testdirReadme = await fsAsync.readFile(
+        `${dir.path}/nested/double-nested/double-double-nested/README.md`,
+        "utf8",
+      );
 
       expect(rootReadme).toStrictEqual(testdirReadme);
 
@@ -254,7 +259,7 @@ describe("map fs to objects", () => {
       const mockFiles = {
         "file.txt": "this is just a file!\n",
         "README.md": "# testdirs\n",
-        "nested": {
+        nested: {
           "README.md": "# Nested Fixture Folder\n",
           "image.txt": "Hello, World!\n",
         },
@@ -269,10 +274,12 @@ describe("map fs to objects", () => {
       const mockFiles = {
         "file.txt": "this is just a file!\n",
         "README.md": "# testdirs\n",
-        "nested": {
+        nested: {
           "README.md": "# Nested Fixture Folder\n",
           // eslint-disable-next-line node/prefer-global/buffer
-          "image.txt": Buffer.from([72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33, 10]),
+          "image.txt": Buffer.from([
+            72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33, 10,
+          ]),
         },
       };
 

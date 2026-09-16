@@ -25,18 +25,21 @@ const testdirOptions = {
   dirname: "testdir", // default: a random directory name
 } satisfies TestdirOptions;
 
-const dir = await testdir({
-  "file1.txt": "Hello, World!",
-  "nested": {
-    "file2.txt": "Hello, Nested!",
-    "tests": {
-      "file3.txt": "Hello, Tests!"
-    }
-  },
+const dir = await testdir(
+  {
+    "file1.txt": "Hello, World!",
+    nested: {
+      "file2.txt": "Hello, Nested!",
+      tests: {
+        "file3.txt": "Hello, Tests!",
+      },
+    },
 
-  // Alternatively, you can create nested directories with a flat path
-  "nested/tests/file4.txt": "Hello, Tests!"
-}, testdirOptions);
+    // Alternatively, you can create nested directories with a flat path
+    "nested/tests/file4.txt": "Hello, Tests!",
+  },
+  testdirOptions,
+);
 
 console.log(dir.path);
 
@@ -55,14 +58,17 @@ import { link, metadata, symlink, testdir } from "testdirs";
 const dir = await testdir({
   "file1.txt": "Hello, World!",
 
-  "nested": {
+  nested: {
     "file2.txt": symlink("../file1.txt"),
     "file3.txt": metadata("Hello, World!", { mode: 0o444 }), // read-only file
   },
 
-  "readonly": metadata({
-    "file4.txt": "Hello, World!",
-  }, { mode: 0o444 }), // read-only directory
+  readonly: metadata(
+    {
+      "file4.txt": "Hello, World!",
+    },
+    { mode: 0o444 },
+  ), // read-only directory
 
   // creating a symlink pointing to file1.txt
   "symlink.txt": symlink("file1.txt"),
@@ -121,30 +127,36 @@ import { z } from "zod";
 const options = z.object({ dirname: z.string().optional() });
 
 // create factory with an extension method (from)
-export const myTestdir = createCustomTestdir(async ({ fixturePath, files }) => {
-  await fs.mkdir(fixturePath, { recursive: true });
-  await createFileTree(fixturePath, files);
-  return {
-    path: fixturePath,
-    remove: async () => fs.rm(fixturePath, { recursive: true, force: true }),
-    [Symbol.asyncDispose]: async () => fs.rm(fixturePath, { recursive: true, force: true }),
-  };
-}, {
-  async dirname(options) {
-    return options?.dirname
-      ? path.resolve(options.dirname)
-      : path.join(await fs.realpath(tmpdir()), `my-testdir-${randomUUID()}`);
+export const myTestdir = createCustomTestdir(
+  async ({ fixturePath, files }) => {
+    await fs.mkdir(fixturePath, { recursive: true });
+    await createFileTree(fixturePath, files);
+    return {
+      path: fixturePath,
+      remove: async () => fs.rm(fixturePath, { recursive: true, force: true }),
+      [Symbol.asyncDispose]: async () => fs.rm(fixturePath, { recursive: true, force: true }),
+    };
   },
-  optionsSchema: options,
-  // The extensions is not required, but allows you to attach additional methods to the testdir function
-  // such as `from`, presets, or convenience wrappers.
-  extensions: {
-    async from(root: string, opts?: z.input<typeof options> & { fromFS?: Parameters<typeof fromFileSystem>[1] }) {
-      const files = await fromFileSystem(root, opts?.fromFS);
-      return myTestdir(files, opts);
+  {
+    async dirname(options) {
+      return options?.dirname
+        ? path.resolve(options.dirname)
+        : path.join(await fs.realpath(tmpdir()), `my-testdir-${randomUUID()}`);
+    },
+    optionsSchema: options,
+    // The extensions is not required, but allows you to attach additional methods to the testdir function
+    // such as `from`, presets, or convenience wrappers.
+    extensions: {
+      async from(
+        root: string,
+        opts?: z.input<typeof options> & { fromFS?: Parameters<typeof fromFileSystem>[1] },
+      ) {
+        const files = await fromFileSystem(root, opts?.fromFS);
+        return myTestdir(files, opts);
+      },
     },
   },
-});
+);
 
 // Usage
 const dir1 = await myTestdir({ "a.txt": "hello" });

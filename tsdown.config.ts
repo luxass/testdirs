@@ -1,11 +1,7 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  entry: [
-    "./src/index.ts",
-    "./src/helpers.ts",
-    "./src/factory.ts",
-  ],
+  entry: ["./src/index.ts", "./src/helpers.ts", "./src/factory.ts"],
   format: "esm",
   clean: true,
   dts: true,

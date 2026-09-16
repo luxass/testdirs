@@ -2,33 +2,29 @@
   "name": "testdirs",
   "version": "4.0.2",
   "description": "A utility to create isolated test directories",
-  "type": "module",
+  "keywords": [
+    "testdirs"
+  ],
+  "license": "MIT",
   "author": {
     "name": "Lucas Nørgård",
     "email": "lucasnrgaard@gmail.com",
     "url": "https://luxass.dev"
   },
-  "packageManager": "pnpm@12.4.2",
-  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/luxass/testdirs.git"
   },
-  "keywords": [
-    "testdirs"
+  "files": [
+    "dist"
   ],
+  "type": "module",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": "./dist/index.mjs",
     "./factory": "./dist/factory.mjs",
     "./helpers": "./dist/helpers.mjs",
     "./package.json": "./package.json"
-  },
-  "types": "./dist/index.d.mts",
-  "files": [
-    "dist"
-  ],
-  "engines": {
-    "node": ">=24"
   },
   "scripts": {
     "build": "tsdown",
@@ -54,5 +50,9 @@
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
     "vitest": "catalog:testing"
-  }
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@12.4.2"
 }

@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import type {
   DirectoryJSON,
   ExtendedTestdirFn,
@@ -6,7 +8,6 @@ import type {
   TestdirFn,
   TestdirInputOptions,
 } from "./types";
-import { z } from "zod";
 
 function parseOptions<TOptionsSchema extends z.ZodType>(
   rawOptions: TestdirInputOptions<TOptionsSchema> | undefined,
@@ -22,7 +23,9 @@ function parseOptions<TOptionsSchema extends z.ZodType>(
     return parsedOptions as TestdirInputOptions<TOptionsSchema>;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const issues = error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join(", ");
+      const issues = error.issues
+        .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+        .join(", ");
       throw new Error(`Options validation failed: ${issues}`);
     }
 
@@ -79,5 +82,9 @@ export function createCustomTestdir<
     }
   }
 
-  return customTestdir as ExtendedTestdirFn<TestdirInputOptions<TOptionsSchema>, TResult, TExtensions>;
+  return customTestdir as ExtendedTestdirFn<
+    TestdirInputOptions<TOptionsSchema>,
+    TResult,
+    TExtensions
+  >;
 }
