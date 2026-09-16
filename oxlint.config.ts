@@ -30,5 +30,16 @@ export default defineConfig({
         "no-console": "off",
       },
     },
+    {
+      // Test files are idiomatically long and use async callbacks
+      // without await, so these pedantic rules only add noise here.
+      files: ["test/**/*"],
+      rules: {
+        "eslint/max-lines": "off",
+        "eslint/max-lines-per-function": "off",
+        "eslint/require-await": "off",
+        "typescript/require-await": "off",
+      },
+    },
   ],
 });
