@@ -2,8 +2,6 @@
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
-[![jsr version][jsr-version-src]][jsr-version-href]
-
 A utility to create isolated test directories
 
 > [!NOTE]
@@ -176,5 +174,3 @@ Published under [MIT License](./LICENSE).
 [npm-version-href]: https://npmjs.com/package/testdirs
 [npm-downloads-src]: https://img.shields.io/npm/dm/testdirs?style=flat&colorA=18181B&colorB=4169E1
 [npm-downloads-href]: https://npmjs.com/package/testdirs
-[jsr-version-src]: https://jsr.io/badges/@luxass/testdirs?style=flat&labelColor=18181B&logoColor=4169E1
-[jsr-version-href]: https://jsr.io/@luxass/testdirs
