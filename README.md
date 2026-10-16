@@ -80,8 +80,9 @@ const dir = await testdir({
 You can create a testdir from an existing directory using the `from` method:
 
 ```ts
-import type { FromFileSystemOptions, TestdirOptions } from "testdirs";
 import assert from "node:assert";
+
+import type { FromFileSystemOptions, TestdirOptions } from "testdirs";
 import { fromFileSystem, testdir } from "testdirs";
 
 const fromFSOptions = {
@@ -117,6 +118,7 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+
 import { createFileTree, fromFileSystem } from "testdirs";
 import { createCustomTestdir } from "testdirs/factory";
 import { z } from "zod";
