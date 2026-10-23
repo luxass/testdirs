@@ -6,7 +6,7 @@ strictDepBuilds: true
 blockExoticSubdeps: true
 
 catalog:
-  zod: 4.6.5
+  zod: 4.6.6
 
 catalogs:
   dev:
@@ -23,3 +23,6 @@ catalogs:
 
   types:
     "@types/node": 26.6.5
+minimumReleaseAgeExclude:
+  # Renovate security update: zod@4.6.6
+  - zod@4.6.6
