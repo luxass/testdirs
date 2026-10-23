@@ -10,7 +10,7 @@ catalog:
 
 catalogs:
   dev:
-    oxfmt: 0.72.0
+    oxfmt: 0.73.0
     oxlint: 1.87.0
     oxlint-tsgolint: 7.0.2004
     publint: 0.3.25
