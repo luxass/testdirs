@@ -5,10 +5,10 @@ catalogMode: prefer
 strictDepBuilds: true
 blockExoticSubdeps: true
 
-catalog:
-  zod: 4.6.7
-
 catalogs:
+  runtime:
+    zod: 4.6.7
+
   dev:
     oxfmt: 0.75.0
     oxlint: 1.90.0

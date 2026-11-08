@@ -38,7 +38,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "zod": "catalog:"
+    "zod": "catalog:runtime"
   },
   "devDependencies": {
     "@types/node": "catalog:types",
